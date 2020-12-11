@@ -73,6 +73,18 @@ return [
     'paypal_api_client_secret' => env('PAYPAL_API_CLIENT_SECRET', 'bar'),
 
     /*
+     * If you wish to allow Stripe payments via the portal, set this to true
+     */
+    'stripe_enabled' => env('STRIPE_ENABLED', false),
+
+    /*
+     * If stripe_enabled is true, this be set to a valid 'publishable' Stripe Api Key.
+     * These can be found at https://dashboard.stripe.com/ under 'Developers -> API Keys`.
+     * Be sure to create LIVE credentials and not SANDBOX!
+     */
+    'stripe_api_key' => env('STRIPE_API_KEY', 'foo'),
+
+    /*
      * You must input a valid currency code to use for PayPal from https://developer.paypal.com/docs/classic/api/currency_codes/
      * A sane default (USD) is provided, but ensure this is updated if you are not using US dollars.
      */
