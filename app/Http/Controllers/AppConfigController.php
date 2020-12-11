@@ -122,6 +122,8 @@ class AppConfigController extends Controller
                 'go_cardless_environment',
                 'go_cardless_access_token',
                 'go_cardless_currency_code',
+                'stripe_enabled',
+                'stripe_api_key',
                 'paypal_enabled',
                 'paypal_api_client',
                 'paypal_api_client_secret',
