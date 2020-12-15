@@ -20,6 +20,8 @@ class Nightmares
      */
     public function setupIntent()
     {
+        // Stripe::setApiKey('sk_test_4eC39HqLyjWDarjtT1zdp7dc');
+
         $customer = Stripe\Customer::create();
 
         $intent = Stripe\SetupIntent::create([

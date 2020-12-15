@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Billing\GoCardless;
-use App\Billing\Stripe;
+use App\Billing\Nightmares;
 use App\Http\Requests\CreateBankAccountRequest;
 use App\Http\Requests\CreateCreditCardRequest;
 use App\Http\Requests\CreditCardPaymentRequest;
