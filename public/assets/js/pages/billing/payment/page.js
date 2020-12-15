@@ -1,4 +1,10 @@
 $(document).ready(function(){
+    var stripe = Stripe('pk_test_TYooMQauvdEDq54NiTphI7jx');
+    console.log('end my suffering', stripe);
+    var elements = stripe.elements();
+    var cardElement = elements.create('card');
+    cardElement.mount('#card-element');
+
     var ccNumberField = $("#cc-number");
     var expirationField = $("#expirationDate");
     var makeAuto = $("#makeAuto");
