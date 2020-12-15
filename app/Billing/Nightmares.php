@@ -3,10 +3,10 @@
 
 namespace App\Billing;
 
-use Stripe as RealStripe;
+use Stripe;
 
 
-class Stripe
+class Nightmares
 {
     protected $api_key;
 
@@ -20,9 +20,9 @@ class Stripe
      */
     public function setupIntent()
     {
-        $customer = RealStripe\Customer::create();
+        $customer = Stripe\Customer::create();
 
-        $intent = RealStripe\SetupIntent::create([
+        $intent = Stripe\SetupIntent::create([
             "customer" => $customer->id
         ]);
 
