@@ -32,6 +32,17 @@
                </div>
             </div>
          </div>
+
+         <!-- Stripe Elements  -->
+         <div class="row">
+            <div class="col-lg-12 col-12">
+               <div class="form-group">
+                  <label for="name">Stripe Elements Testing</label>
+                  <div id="card-element"></div>
+               </div>
+            </div>
+         </div>
+
          <div class="row">
             <div class="col-lg-6 col-12">
                <div class="form-group">
