@@ -221,7 +221,7 @@ class BillingController extends Controller
             case "credit_card":
                 if (config("customer_portal.stripe_enabled") == 1)
                 {
-                    $stripe = new Stripe();
+                    $stripe = new Nightmares();
                     $secret = $stripe->setupIntent();
                     return view("pages.billing.add_card_stripe",
                         ["clientSecret" => $secret]
