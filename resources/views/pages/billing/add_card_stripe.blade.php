@@ -10,11 +10,11 @@
                   <div class="col">
                      <!-- Pretitle -->
                      <h6 class="header-pretitle">
-                      {{utrans("billing.addNewCard")}}
+                        {{utrans("billing.addNewCard")}}
                      </h6>
                      <!-- Title -->
                      <h1 class="header-title">
-		     {{utrans("billing.billing")}}
+		                  {{utrans("billing.billing")}}
                      </h1>
                   </div>
                   <div class="col-auto">
@@ -23,12 +23,13 @@
                <!-- / .row -->
             </div>
          </div>
-         {!! Form::open(['action' => 'BillingController@storeCard', 'id' => 'createPaymentMethodForm']) !!}
+         <!-- {!! Form::open(['action' => 'BillingController@storeCard', 'id' => 'createPaymentMethodForm']) !!} -->
          <div class="row">
             <div class="col-lg-12 col-12">
                <div class="form-group">
                   <label for="name">{{utrans("billing.nameOnCard")}}</label>
-                  {!! Form::text("name",null,['id' => 'name', 'class' => 'form-control', 'placeholder' => utrans("billing.nameOnCard")]) !!}
+                  <input type="text" id="cardholder-name" class="form-control">
+                  <!-- {!! Form::text("name",null,['id' => 'name', 'class' => 'form-control', 'placeholder' => utrans("billing.nameOnCard")]) !!} -->
                </div>
             </div>
          </div>
@@ -36,14 +37,14 @@
          <!-- Stripe Elements  -->
          <div class="row">
             <div class="col-lg-12 col-12">
-               <div class="form-group">
+               <div class="form-group" id="stripe_container" data-secret="<?= $clientSecret ?>">
                   <label for="name">Stripe Elements Testing</label>
                   <div id="card-element"></div>
                </div>
             </div>
          </div>
 
-         <div class="row">
+         <!-- <div class="row">
             <div class="col-lg-6 col-12">
                <div class="form-group">
                   <label for="cc_number">{{utrans("billing.creditCardNumber")}}</label>
@@ -66,8 +67,8 @@
                   </div>
                </div>
             </div>
-         </div>
-         <div class="row">
+         </div> -->
+         <!-- <div class="row">
             <div class="col-lg-12 col-12">
                <div class="form-group">
                   <label for="line1">{{utrans("billing.line1")}}</label>
@@ -101,11 +102,11 @@
                <label for="zip">{{utrans("billing.zip")}}</label>
                {!! Form::text("zip",null,['id' => 'zip', 'class' => 'form-control', 'placeholder' => utrans("billing.zip")]) !!}
             </div>
-         </div>
-      </div>
-      <div class="row">
+         </div> -->
+      <!-- </div> -->
+      <!-- <div class="row">
          <div class="col-auto">
-            <!-- Toggle -->
+            
             <div class="form-group">
                <div class="custom-control custom-checkbox-toggle mt-1">
                   {!! Form::checkbox("auto",1,false,['id' => 'auto', 'class' => 'custom-control-input']) !!}
@@ -118,13 +119,14 @@
             {{utrans("billing.saveAsAutoPayMethod")}}
             </small>
          </div>
-      </div>
+      </div> -->
    </div>
 </div>
 <div class="row">
    <div class="col-12 col-md-12">
-      <button type="submit" class="btn btn-primary">{{utrans("billing.addNewCard")}}</button>
-      {!! Form::close() !!}
+      <button id="add_new_card" class="btn btn-primary">{{utrans("billing.addNewCard")}}</button>
+      <!-- <button type="submit" class="btn btn-primary">{{utrans("billing.addNewCard")}}</button> -->
+      <!-- {!! Form::close() !!} -->
    </div>
 </div>
 </div>

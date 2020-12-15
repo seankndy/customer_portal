@@ -376,6 +376,45 @@
             </div>
          </div>
       </div>
+
+      <!-- Stripe -->
+      <div class="card">
+         <div class="card-header">
+            <h4 class="card-header-title text-muted">
+               <i class="fe fe-credit-card mr-3"></i> Stripe Integration
+            </h4>
+         </div>
+         <div class="card-body">
+            <div class="row mt-1">
+               <div class="form-group">
+                  <div class="col-auto ">
+                     <!-- Toggle -->
+                     <div class="custom-control custom-checkbox-toggle mt-1">
+                        {{ Form::hidden('stripe_enabled',0) }}
+                        {!! Form::checkbox("stripe_enabled",1,$systemSetting->stripe_enabled,['id' => 'stripe_enabled', 'class' => 'custom-control-input', 'data-toggle' => 'tooltip', 'data-trigger' => 'hover','data-placement' => 'left','data-offset' => '3','data-html' => 'true', 'data-original-title' => 'Integrate Stripe into your billing flow']) !!}
+                        <label class="custom-control-label" for="stripe_enabled"></label>
+                     </div>
+                  </div>
+               </div>
+               <div class="col-auto mt-2">
+                  <label>
+                  Enable Stripe
+                  </label>
+               </div>
+            </div>
+            <div class="row mt-1">
+               <div class="col-12">
+                  <div class="form-group">
+                     <label>
+                     API Token
+                     </label>
+                     {!! Form::text("stripe_api_key",$systemSetting->stripe_api_key,['id' => 'stripe_api_key', 'class' => 'form-control', 'placeholder' => "", 'data-toggle' => 'tooltip', 'data-trigger' => 'hover','data-placement' => 'left','data-offset' => '3','data-html' => 'true', 'data-original-title' => 'Your merchant API token provided by GoCardless']) !!}
+                  </div>
+               </div>
+            </div>
+         </div>
+      </div>
+
       <div class="card">
          <div class="card-header">
             <h4 class="card-header-title text-muted">
