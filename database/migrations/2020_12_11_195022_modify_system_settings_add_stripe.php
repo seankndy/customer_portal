@@ -15,7 +15,7 @@ class ModifySystemSettingsAddStripe extends Migration
     {
         Schema::table('system_settings', function (Blueprint $table) {
             $table->boolean('stripe_enabled')->nullable(false)->default(false);
-            $table->string('stripe_api_token')->nullable();
+            $table->string('stripe_api_key')->nullable();
         });
     }
 
