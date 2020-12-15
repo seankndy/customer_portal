@@ -23,13 +23,12 @@
                <!-- / .row -->
             </div>
          </div>
-         <!-- {!! Form::open(['action' => 'BillingController@storeCard', 'id' => 'createPaymentMethodForm']) !!} -->
+         {!! Form::open(['action' => 'BillingController@storeCard', 'id' => 'createPaymentMethodForm']) !!}
          <div class="row">
             <div class="col-lg-12 col-12">
                <div class="form-group">
                   <label for="name">{{utrans("billing.nameOnCard")}}</label>
-                  <input type="text" id="cardholder-name" class="form-control">
-                  <!-- {!! Form::text("name",null,['id' => 'name', 'class' => 'form-control', 'placeholder' => utrans("billing.nameOnCard")]) !!} -->
+                  {!! Form::text("name",null,['id' => 'name', 'class' => 'form-control', 'placeholder' => utrans("billing.nameOnCard")]) !!}
                </div>
             </div>
          </div>
@@ -40,8 +39,12 @@
                <div class="form-group" id="stripe_container" data-secret="<?= $clientSecret ?>">
                   <label for="name">Stripe Elements Testing</label>
                   <div id="card-element"></div>
+                  <label id="stripe_errors" class="help-block error-help-block"></label>
                </div>
             </div>
+            <!-- <div class="col-lg-12 col-12">
+               
+            </div> -->
          </div>
 
          <!-- <div class="row">
@@ -104,11 +107,11 @@
             </div>
          </div> -->
       <!-- </div> -->
-      <!-- <div class="row">
+      <div class="row">
          <div class="col-auto">
-            
             <div class="form-group">
                <div class="custom-control custom-checkbox-toggle mt-1">
+                  
                   {!! Form::checkbox("auto",1,false,['id' => 'auto', 'class' => 'custom-control-input']) !!}
                   <label class="custom-control-label" for="auto"></label>
                </div>
@@ -119,14 +122,29 @@
             {{utrans("billing.saveAsAutoPayMethod")}}
             </small>
          </div>
-      </div> -->
+      </div>
+
+      <div class="row">
+         <div class="col-auto">   
+            <div class="form-group">
+               <div class="custom-control custom-checkbox-toggle mt-1">
+                  {!! Form::checkbox("legal",1,false,['id' => 'legal', 'class' => 'custom-control-input']) !!}
+                  <label class="custom-control-label" for="legal"></label>
+               </div>
+            </div>
+         </div>
+         <div class="col mt-1">
+            <small class="text-muted">
+            {{utrans("billing.legalDisclaimer", ["business_name" => config("customer_portal.company_name")])}}
+            </small>
+         </div>
+      </div>
    </div>
 </div>
-<div class="row">
+<div class="row mt-md-5">
    <div class="col-12 col-md-12">
-      <button id="add_new_card" class="btn btn-primary">{{utrans("billing.addNewCard")}}</button>
-      <!-- <button type="submit" class="btn btn-primary">{{utrans("billing.addNewCard")}}</button> -->
-      <!-- {!! Form::close() !!} -->
+      <button type="submit" id="add_new_card" class="btn btn-primary">{{utrans("billing.addNewCard")}}</button>
+      {!! Form::close() !!}
    </div>
 </div>
 </div>
@@ -137,5 +155,5 @@
 <script src="/assets/libs/jquery-payment-plugin/jquery.payment.min.js"></script>
 <script src="/assets/js/pages/billing/payment/page_stripe.js"></script>
 <script type="text/javascript" src="/assets/libs/js-validation/jsvalidation.min.js"></script>
-{!! JsValidator::formRequest('App\Http\Requests\CreateCreditCardRequest','#createPaymentMethodForm') !!}
+{!! JsValidator::formRequest('App\Http\Requests\StripeCreateCreditCardRequest','#createPaymentMethodForm') !!}
 @endsection

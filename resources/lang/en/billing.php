@@ -20,6 +20,7 @@ return [
     'nameOnCard' => 'Name on Card',
     'expirationDate' => 'Expiration Date',
     'submitPayment' => 'Submit Payment',
+    'legalDisclaimer' => 'I authorise :business_name to send instructions to the financial institution that issued my card to take payments from my card account in accordance with the terms of my agreement with you.',
     'saveAsAutoPayMethod' => 'Automatically charge this card for all future invoices',
     'autoPayDescription' => 'By checking this box, you agree that this card will be automatically charged for all future invoices generated. You can cancel this at any time via this portal.',
     'amountToPay' => 'Amount to Pay',

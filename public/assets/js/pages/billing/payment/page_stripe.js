@@ -5,43 +5,39 @@ $(document).ready(function(){
     var cardElement = elements.create('card');
     cardElement.mount('#card-element');
 
-    // var ccNumberField = $("#cc-number");
-    // var expirationField = $("#expirationDate");
-    // var makeAuto = $("#makeAuto");
-    // var ccIcon = $("#ccIcon");
-
-    //add_new_card
-    //stripe_container
-
-    var cardholderName = document.getElementById('cardholder-name');
-    var cardButton = document.getElementById('add_new_card');
+    var cardholderName = document.getElementById('name');
     var cardContainer = document.getElementById('stripe_container');
     var clientSecret = cardContainer.dataset.secret;
 
-    cardButton.addEventListener('click', function(ev) {
-
+    $('#createPaymentMethodForm').submit(async function() {
         console.log(cardholderName, cardContainer, clientSecret);
 
-        stripe.confirmCardSetup(
+        return await stripe.confirmCardSetup(
             clientSecret,
             {
             payment_method: {
                 card: cardElement,
-                billing_details: {
-                name: cardholderName.value,
+                    billing_details: {
+                    name: cardholderName.value,
                 },
             },
             }
         ).then(function(result) {
             if (result.error) {
-            // Display error.message in your UI.
-            console.error(result.error);
+                // Display error.message in your UI.
+                console.error(result.error);
+                $('#stripe_errors').text(result.error.message);
+                return false;
             } else {
-            // The setup has succeeded. Display a success message.
-            alert('king status');
+                // The setup has succeeded. Display a success message.
+                alert('king status');
+                return true;
             }
         });
+
+        
     });
+
 
     // ccNumberField.payment('formatCardNumber');
     // expirationField.payment('formatCardExpiry');
