@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Billing\GoCardless;
+use App\Billing\Stripe;
 use App\Http\Requests\CreateBankAccountRequest;
 use App\Http\Requests\CreateCreditCardRequest;
 use App\Http\Requests\CreditCardPaymentRequest;
@@ -93,7 +94,7 @@ class BillingController extends Controller
             'Content-Disposition' => "attachment; filename=Invoice $invoiceID.pdf",
         ]);
     }
-    
+
     /**
      * Make payment page
      * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
@@ -177,7 +178,7 @@ class BillingController extends Controller
                 }
             }
         }
-        
+
         return redirect()->back()->withErrors(utrans("errors.paymentMethodNotFound"));
     }
 
@@ -218,7 +219,18 @@ class BillingController extends Controller
         switch ($type)
         {
             case "credit_card":
-                return view("pages.billing.add_card");
+                if (config("customer_portal.stripe_enabled") == 1)
+                {
+                    $stripe = new Stripe();
+                    $secret = $stripe->setupIntent();
+                    return view("pages.billing.add_card_stripe",
+                        ["clientSecret" => $secret]
+                    );
+                }
+                else
+                {
+                    return view("pages.billing.add_card");
+                }
                 break;
             case "bank":
                 if (config("customer_portal.enable_gocardless") == 1)
@@ -259,7 +271,7 @@ class BillingController extends Controller
         } catch (Exception $e) {
             return redirect()->back()->withErrors(utrans("errors.failedToCreateCard"))->withInput();
         }
-        
+
         unset($creditCard);
         unset($request);
 
@@ -315,7 +327,7 @@ class BillingController extends Controller
      */
     private function payWithExistingPaymentMethod($request)
     {
-        
+
         try {
             $result = $this->accountBillingController->makePaymentUsingExistingPaymentMethod(get_user()->account_id, intval($request->input('payment_method')), trim($request->input('amount')));
         } catch (Exception $e) {
@@ -408,7 +420,7 @@ class BillingController extends Controller
      */
     private function getTransactions()
     {
-        
+
         if (!Cache::tags("billing.transactions")->has(get_user()->account_id)) {
             $transactions = [];
             $debits = $this->accountBillingController->getDebits(get_user()->account_id);
