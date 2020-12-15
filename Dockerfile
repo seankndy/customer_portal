@@ -18,18 +18,21 @@ RUN add-apt-repository ppa:ondrej/php \
 
 WORKDIR /var/www/html
 
-COPY --chown=www-data --from=composer:1.8.4 /usr/bin/composer /tmp/composer
-COPY composer.json composer.lock ./
-RUN mkdir -p vendor \
- && chown www-data:www-data vendor \
- && COMPOSER_CACHE_DIR=/dev/null setuser www-data /tmp/composer install --no-dev --no-interaction --no-scripts --no-autoloader
+#COPY --chown=www-data --from=composer:1.8.4 /usr/bin/composer /tmp/composer
+#COPY composer.json composer.lock ./
+#RUN mkdir -p vendor \
+ #&& chown www-data:www-data vendor \
+ #&& COMPOSER_CACHE_DIR=/dev/null setuser www-data /tmp/composer install --no-dev --no-interaction --no-scripts --no-autoloader
+#
+#COPY --chown=www-data . .
 
-COPY --chown=www-data . .
+#RUN COMPOSER_CACHE_DIR=/dev/null setuser www-data /tmp/composer install --no-dev --no-interaction --no-scripts --classmap-authoritative \
+# && rm -rf /tmp/composer
 
-RUN COMPOSER_CACHE_DIR=/dev/null setuser www-data /tmp/composer install --no-dev --no-interaction --no-scripts --classmap-authoritative \
- && rm -rf /tmp/composer
-
+# Copy these instead of mounting them
 COPY deploy/conf/nginx/sonar-customerportal.template /etc/nginx/conf.d/customerportal.template
+
+COPY scripts/certificates/rootCA.pem /usr/local/share/ca-certificates/sonar/rootCA.crt
 
 COPY deploy/conf/php-fpm/ /etc/php/7.3/fpm/
 
@@ -45,4 +48,7 @@ RUN mkdir /etc/service/nginx
 COPY deploy/services/nginx.sh /etc/service/nginx/run
 
 VOLUME ['/var/www/html/storage']
+
+RUN update-ca-certificates
+
 EXPOSE 80 443
