@@ -260,6 +260,8 @@ class BillingController extends Controller
             throw new InvalidArgumentException(utrans("errors.creditCardPaymentsDisabled"));
         }
 
+        dd($request);
+
         return redirect()->action("BillingController@index")->with('success', utrans("billing.cardAdded"));
     }
 

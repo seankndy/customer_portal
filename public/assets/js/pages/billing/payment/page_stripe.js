@@ -8,16 +8,15 @@ $(document).ready(function(){
     var cardholderName = document.getElementById('name');
     var cardContainer = document.getElementById('stripe_container');
     var clientSecret = cardContainer.dataset.secret;
-    var customerId = cardContainer.dataset.customer;
 
-    $('#createStripePaymentMethodForm').submit(function(event) {
+    $('#createStripePaymentMethodForm').submit(async function(event) {
         
         event.preventDefault();
         const form = event.target;
 
         //Display loading spinna
 
-        stripe.confirmCardSetup(
+        let result = await stripe.confirmCardSetup(
             clientSecret,
             {
                 payment_method: {
@@ -27,42 +26,53 @@ $(document).ready(function(){
                     },
                 },
             }
-        ).then(function(result) {
-            if (result.error) {
-                // Display error.message in your UI.
-                console.error(result.error);
-                $('#stripe_errors').text(result.error.message);
-                
-            } else {
-                // The setup has succeeded. Display a success message.
-                console.log(result);
+        );
+        
+        if (result.error) {
+            // Display error.message in your UI.
+            console.error(result.error);
+            $('#stripe_errors').text(result.error.message);
+            
+        } else {
+            console.log(result);
 
-                //Add hidden fields to form
-                $('<input>').attr({
-                    type: 'hidden',
-                    id: 'customerId',
-                    name: 'customerId',
-                    value: customerId,
-                }).appendTo('#createStripePaymentMethodForm');
+            let cardDetails = await $.get('/portal/billing/stripe/' + result.setupIntent.payment_method);
+            console.log(cardDetails);
 
-                $('<input>').attr({
-                    type: 'hidden',
-                    id: 'token',
-                    name: 'token',
-                    value: result.setupIntent.payment_method,
-                }).appendTo('#createStripePaymentMethodForm');
-                
-                $('<input>').attr({
-                    type: 'hidden',
-                    id: 'identifier',
-                    name: 'identifier',
-                    value: result.setupIntent.id,
-                }).appendTo('#createStripePaymentMethodForm');
+            //cardDetails
 
-                //Submit form time
-                form.submit();
-            }
-        });
+            //Add hidden fields to form
+            $('<input>').attr({
+                type: 'hidden',
+                id: 'customerId',
+                name: 'customerId',
+                value: cardDetails.customer,
+            }).appendTo('#createStripePaymentMethodForm');
+
+            $('<input>').attr({
+                type: 'hidden',
+                id: 'token',
+                name: 'token',
+                value: cardDetails.id,
+            }).appendTo('#createStripePaymentMethodForm');
+            
+            $('<input>').attr({
+                type: 'hidden',
+                id: 'identifier',
+                name: 'identifier',
+                value: cardDetails.card.last4,
+            }).appendTo('#createStripePaymentMethodForm');
+            
+            $('<input>').attr({
+                type: 'hidden',
+                id: 'expirationDate',
+                name: 'expirationDate',
+                value: `${cardDetails.card.exp_month}/${cardDetails.card.exp_year}`,
+            }).appendTo('#createStripePaymentMethodForm');
+
+            //Submit form time
+            form.submit();
+        }
     });
 
     // updatePaymentForm();
@@ -121,26 +131,3 @@ function updateSubdivisions()
         $("#state").prop('disabled',false);
     });
 }
-
-// function updatePaymentForm()
-// {
-//     var selectedPaymentMethod = $("#payment_method").val();
-//     switch (selectedPaymentMethod) {
-//         case "new_card":
-//             $(".new_card").show();
-//             $(".non_paypal").show();
-//             $(".paypal").hide();
-//             break;
-//         case "paypal":
-//             $(".new_card").hide();
-//             $(".non_paypal").hide();
-//             $(".paypal").show();
-//             break;
-//         default:
-//             //Existing card
-//             $(".new_card").hide();
-//             $(".non_paypal").show();
-//             $(".paypal").hide();
-//             break;
-//     }
-// }
