@@ -24,7 +24,7 @@
             </div>
          </div>
          {!! Form::open(['action' => 'BillingController@storeTokenizedCard', 'id' => 'createStripePaymentMethodForm']) !!}
-         
+
          <div class="row">
             <div class="col-lg-12 col-12">
                <div class="form-group">
@@ -109,7 +109,7 @@
          <div class="col-auto">
             <div class="form-group">
                <div class="custom-control custom-checkbox-toggle mt-1">
-                  
+
                   {!! Form::checkbox("auto",1,false,['id' => 'auto', 'class' => 'custom-control-input']) !!}
                   <label class="custom-control-label" for="auto"></label>
                </div>
@@ -123,7 +123,7 @@
       </div>
 
       <div class="row">
-         <div class="col-auto">   
+         <div class="col-auto">
             <div class="form-group">
                <div class="custom-control custom-checkbox-toggle mt-1">
                   {!! Form::checkbox("legal",1,false,['id' => 'legal', 'class' => 'custom-control-input']) !!}
@@ -153,5 +153,5 @@
 <script src="/assets/libs/jquery-payment-plugin/jquery.payment.min.js"></script>
 <script src="/assets/js/pages/billing/payment/page_stripe.js"></script>
 <script type="text/javascript" src="/assets/libs/js-validation/jsvalidation.min.js"></script>
-{!! JsValidator::formRequest('App\Http\Requests\StripeCreateCreditCardRequest','#createStripePaymentMethodForm') !!}
+{!! JsValidator::formRequest('App\Http\Requests\CreateTokenizedCreditCardRequest','#createStripePaymentMethodForm') !!}
 @endsection
