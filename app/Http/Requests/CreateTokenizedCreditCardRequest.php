@@ -28,6 +28,7 @@ class CreateTokenizedCreditCardRequest extends FormRequest
             'customerId' => 'required|string',
             'token' => 'required|string',
             'identifier' => 'required|string',
+            'expirationDate' => 'required|string', //this has the / separator in it
             'auto' => 'boolean',
             'line1' => 'required|string',
             'city' => 'required|string',
@@ -35,7 +36,6 @@ class CreateTokenizedCreditCardRequest extends FormRequest
             'zip' => 'required|string',
             'country' => 'required|string',
             'name' => 'required|string',
-            'legalDisclaimer' => 'required|boolean',
         ];
     }
 }

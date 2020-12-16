@@ -223,12 +223,9 @@ class BillingController extends Controller
                 if (config("customer_portal.stripe_enabled") == 1)
                 {
                     $stripe = new Nightmares();
-                    $customer = $stripe->createCustomer();
-                    $customerId = $customer->id;
-                    $secret = $stripe->setupIntent($customerId);
-                    return view("pages.billing.add_card_stripe",
-                        compact('secret', 'customerId')
-                    );
+                    return view("pages.billing.add_card_stripe", [
+                        'secret' => $stripe->setupIntent()
+                    ]);
                 }
                 else
                 {
@@ -258,11 +255,6 @@ class BillingController extends Controller
      */
     public function storeTokenizedCard(CreateTokenizedCreditCardRequest $request)
     {
-        $stripe = new Nightmares();
-        $paymentMethods = $stripe->listPaymentMethods($request->input('customerId'));
-        
-        /* PaymentMethods is a collection with all the deets we need for saving shit */
-
         if (config("customer_portal.enable_credit_card_payments") == false)
         {
             throw new InvalidArgumentException(utrans("errors.creditCardPaymentsDisabled"));

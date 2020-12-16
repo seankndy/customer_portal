@@ -37,7 +37,7 @@
          <!-- Stripe Elements  -->
          <div class="row">
             <div class="col-lg-12 col-12">
-               <div class="form-group" id="stripe_container" data-secret="<?= $secret ?>" data-customer="<?= $customerId ?>" >
+               <div class="form-group" id="stripe_container" data-secret="<?= $secret ?>" >
                   <label for="name">Stripe Elements Testing</label>
                   <div id="card-element"></div>
                   <label id="stripe_errors" class="help-block error-help-block"></label>
