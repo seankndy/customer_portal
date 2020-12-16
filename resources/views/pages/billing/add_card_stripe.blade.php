@@ -37,7 +37,7 @@
          <!-- Stripe Elements  -->
          <div class="row">
             <div class="col-lg-12 col-12">
-               <div class="form-group" id="stripe_container" data-secret="<?= $clientSecret ?>">
+               <div class="form-group" id="stripe_container" data-secret="<?= $secret ?>" data-customer="<?= $customerId ?>" >
                   <label for="name">Stripe Elements Testing</label>
                   <div id="card-element"></div>
                   <label id="stripe_errors" class="help-block error-help-block"></label>
@@ -69,7 +69,7 @@
                </div>
             </div>
          </div> -->
-         <!-- <div class="row">
+         <div class="row">
             <div class="col-lg-12 col-12">
                <div class="form-group">
                   <label for="line1">{{utrans("billing.line1")}}</label>
@@ -103,8 +103,8 @@
                <label for="zip">{{utrans("billing.zip")}}</label>
                {!! Form::text("zip",null,['id' => 'zip', 'class' => 'form-control', 'placeholder' => utrans("billing.zip")]) !!}
             </div>
-         </div> -->
-      <!-- </div> -->
+         </div>
+      </div>
       <div class="row">
          <div class="col-auto">
             <div class="form-group">
@@ -126,8 +126,8 @@
          <div class="col-auto">
             <div class="form-group">
                <div class="custom-control custom-checkbox-toggle mt-1">
-                  {!! Form::checkbox("legal",1,false,['id' => 'legal', 'class' => 'custom-control-input']) !!}
-                  <label class="custom-control-label" for="legal"></label>
+                  {!! Form::checkbox("legalDisclaimer",1,false,['id' => 'legalDisclaimer', 'class' => 'custom-control-input']) !!}
+                  <label class="custom-control-label" for="legalDisclaimer"></label>
                </div>
             </div>
          </div>
@@ -139,7 +139,7 @@
       </div>
    </div>
 </div>
-<div class="row mt-md-5">
+<div class="row mt-2">
    <div class="col-12 col-md-12">
       <button type="submit" id="add_new_card" class="btn btn-primary">{{utrans("billing.addNewCard")}}</button>
       {!! Form::close() !!}

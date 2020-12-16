@@ -223,9 +223,11 @@ class BillingController extends Controller
                 if (config("customer_portal.stripe_enabled") == 1)
                 {
                     $stripe = new Nightmares();
-                    $secret = $stripe->setupIntent();
+                    $customer = $stripe->createCustomer();
+                    $customerId = $customer->id;
+                    $secret = $stripe->setupIntent($customerId);
                     return view("pages.billing.add_card_stripe",
-                        ["clientSecret" => $secret]
+                        compact('secret', 'customerId')
                     );
                 }
                 else
@@ -256,7 +258,10 @@ class BillingController extends Controller
      */
     public function storeTokenizedCard(CreateTokenizedCreditCardRequest $request)
     {
-        print_r($request);
+        $stripe = new Nightmares();
+        $paymentMethods = $stripe->listPaymentMethods($request->input('customerId'));
+        
+        /* PaymentMethods is a collection with all the deets we need for saving shit */
 
         if (config("customer_portal.enable_credit_card_payments") == false)
         {
