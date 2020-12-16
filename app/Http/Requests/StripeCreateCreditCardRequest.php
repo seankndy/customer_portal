@@ -28,6 +28,7 @@ class StripeCreateCreditCardRequest extends FormRequest
             'name' => 'required|string',
             'auto' => 'boolean',
             'legal' => 'required|boolean',
+            'elements' => 'required|boolean'
         ];
     }
 }

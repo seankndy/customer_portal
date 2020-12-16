@@ -6,6 +6,7 @@ use App\Billing\GoCardless;
 use App\Billing\Nightmares;
 use App\Http\Requests\CreateBankAccountRequest;
 use App\Http\Requests\CreateCreditCardRequest;
+use App\Http\Requests\StripeCreateCreditCardRequest;
 use App\Http\Requests\CreditCardPaymentRequest;
 use App\Http\Requests\PaymentMethodDeleteRequest;
 use App\Services\LanguageService;
@@ -246,6 +247,23 @@ class BillingController extends Controller
             default:
                 return redirect()->back()->withErrors(utrans("errors.invalidPaymentMethodType"));
         }
+    }
+
+    /**
+     * Store a new tokenized card for Stripe
+     * @param StripeCreateCreditCardRequest $request
+     * @return $this|mixed
+     */
+    public function storeTokenizedCard(StripeCreateCreditCardRequest $request)
+    {
+        print_r($request);
+        
+        if (config("customer_portal.enable_credit_card_payments") == false)
+        {
+            throw new InvalidArgumentException(utrans("errors.creditCardPaymentsDisabled"));
+        }
+
+        return redirect()->action("BillingController@index")->with('success', utrans("billing.cardAdded"));
     }
 
     /**

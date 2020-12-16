@@ -23,7 +23,8 @@
                <!-- / .row -->
             </div>
          </div>
-         {!! Form::open(['action' => 'BillingController@storeCard', 'id' => 'createPaymentMethodForm']) !!}
+         {!! Form::open(['action' => 'BillingController@storeTokenizedCard', 'id' => 'createStripePaymentMethodForm']) !!}
+         
          <div class="row">
             <div class="col-lg-12 col-12">
                <div class="form-group">
@@ -42,9 +43,6 @@
                   <label id="stripe_errors" class="help-block error-help-block"></label>
                </div>
             </div>
-            <!-- <div class="col-lg-12 col-12">
-               
-            </div> -->
          </div>
 
          <!-- <div class="row">
@@ -155,5 +153,5 @@
 <script src="/assets/libs/jquery-payment-plugin/jquery.payment.min.js"></script>
 <script src="/assets/js/pages/billing/payment/page_stripe.js"></script>
 <script type="text/javascript" src="/assets/libs/js-validation/jsvalidation.min.js"></script>
-{!! JsValidator::formRequest('App\Http\Requests\StripeCreateCreditCardRequest','#createPaymentMethodForm') !!}
+{!! JsValidator::formRequest('App\Http\Requests\StripeCreateCreditCardRequest','#createStripePaymentMethodForm') !!}
 @endsection

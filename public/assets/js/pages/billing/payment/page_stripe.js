@@ -9,18 +9,23 @@ $(document).ready(function(){
     var cardContainer = document.getElementById('stripe_container');
     var clientSecret = cardContainer.dataset.secret;
 
-    $('#createPaymentMethodForm').submit(async function() {
-        console.log(cardholderName, cardContainer, clientSecret);
+    $('#createStripePaymentMethodForm').submit( function(event) {
+        console.log(cardholderName, cardContainer, clientSecret, event);
+        
+        // event.preventDefault();
+        // event.stopImmediatePropagation();
 
-        return await stripe.confirmCardSetup(
+        //Display loading spinna
+
+        return stripe.confirmCardSetup(
             clientSecret,
             {
-            payment_method: {
-                card: cardElement,
+                payment_method: {
+                    card: cardElement,
                     billing_details: {
-                    name: cardholderName.value,
+                        name: cardholderName.value,
+                    },
                 },
-            },
             }
         ).then(function(result) {
             if (result.error) {
@@ -30,12 +35,12 @@ $(document).ready(function(){
                 return false;
             } else {
                 // The setup has succeeded. Display a success message.
-                alert('king status');
+                console.log(result);
                 return true;
             }
         });
 
-        
+        // return false;
     });
 
 
