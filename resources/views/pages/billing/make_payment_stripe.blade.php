@@ -49,27 +49,16 @@
             </div>
             
             <!-- Stripe Elements  -->
-            <div class="row">
-               <div class="col-lg-12 col-12">
-                  <div class="form-group" id="stripe_container" data-secret="<?= $clientSecret ?>" >
-                     <label for="name">Stripe Elements Testing</label>
-                     <div id="card-element"></div>
-                     <label id="stripe_errors" class="help-block error-help-block"></label>
-                  </div>
+            
+            <div class="col-lg-12 col-12">
+               <div class="form-group" id="stripe_container" data-secret="<?= $secret ?>" >
+                  <label for="name">Stripe Elements Testing</label>
+                  <div id="card-element"></div>
+                  <label id="stripe_errors" class="help-block error-help-block"></label>
                </div>
             </div>
+            
 
-            <div class="col-12 col-md-4">
-               <!-- Birthday -->
-               <div class="form-group new_card">
-                  <!-- Label -->
-                  <label>
-                  {{utrans("billing.zip")}}
-                  </label>
-                  <!-- Input -->
-                  {!! Form::text("zip",null,['id' => 'zip', 'class' => 'form-control', 'placeholder' => utrans("billing.zip"), 'required' => true]) !!}
-               </div>
-            </div>
             <div class="col-12 ">
                <!-- First name -->
                <div class="form-group new_card">

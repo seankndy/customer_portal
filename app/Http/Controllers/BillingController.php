@@ -112,8 +112,8 @@ class BillingController extends Controller
         if (\config('customer_portal.stripe_enabled') == 1)
         {
             $stripe = new Nightmares();
-            $clientSecret = $stripe->setupIntent();
-            return view('pages.billing.make_payment_stripe', compact('billingDetails', 'paymentMethods', 'clientSecret'));
+            $secret = $stripe->setupIntent();
+            return view('pages.billing.make_payment_stripe', compact('billingDetails', 'paymentMethods', 'secret'));
         }
 
         return view('pages.billing.make_payment', compact('billingDetails', 'paymentMethods'));
