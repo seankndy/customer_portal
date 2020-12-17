@@ -24,19 +24,18 @@ class TokenizedCreditCardPaymentRequest extends FormRequest
     public function rules()
     {
         return [
+            'customerId' => 'required_if:payment_method,new_card',
+            'token' => 'required_if:payment_method,new_card',
+            'identifier' => 'required_if:payment_method,new_card',
+            'name' => 'required_if:payment_method,new_card',
+            'expirationDate' => 'required_if:payment_method,new_card', //this has the / separator in it
             'makeAuto' => 'boolean',
             'amount' => 'required|numeric|min:0.01',
-            'customerId' => 'required|string',
-            'token' => 'required|string',
-            'identifier' => 'required|string',
-            'expirationDate' => 'required|string', //this has the / separator in it
-            'line1' => 'required|string',
-            'city' => 'required|string',
-            'state' => 'string',
-            'zip' => 'required|string',
-            'country' => 'required|string',
-            'name' => 'required|string',
+            'country' => 'required_if:payment_method,new_card',
+            'line1' => 'required_if:payment_method,new_card',
+            'city' => 'required_if:payment_method,new_card',
+            'state' => 'required_if:payment_method,new_card',
+            'zip' => 'required_if:payment_method,new_card',
         ];
     }
 }
-
