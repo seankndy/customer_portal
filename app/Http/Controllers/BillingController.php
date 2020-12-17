@@ -8,6 +8,7 @@ use App\Http\Requests\CreateBankAccountRequest;
 use App\Http\Requests\CreateCreditCardRequest;
 use App\Http\Requests\CreateTokenizedCreditCardRequest;
 use App\Http\Requests\CreditCardPaymentRequest;
+use App\Http\Requests\TokenizedCreditCardPaymentRequest;
 use App\Http\Requests\PaymentMethodDeleteRequest;
 use App\Services\LanguageService;
 use App\SystemSetting;
@@ -31,6 +32,7 @@ use InvalidArgumentException;
 use SonarSoftware\CustomerPortalFramework\Controllers\AccountBillingController;
 use SonarSoftware\CustomerPortalFramework\Models\BankAccount;
 use SonarSoftware\CustomerPortalFramework\Models\CreditCard;
+use Stripe\Token;
 
 class BillingController extends Controller
 {
@@ -126,8 +128,35 @@ class BillingController extends Controller
      */
     public function submitTokenizedPayment(TokenizedCreditCardPaymentRequest $request)
     {
-        dd($request);
-        return redirect()->action("BillingController@index")->with('success', utrans("billing.paymentWasSuccessful"));
+        switch ($request->input('payment_method')) {
+            case "new_card":
+                try {
+                    $result = $this->payWithNewTokenizedCreditCard($request);
+                } catch (Exception $e) {
+                    Log::error($e->getMessage());
+                    return redirect()->back()->withErrors($e->getMessage())->withInput();
+                }
+                break;
+            default:
+                try {
+                    $result = $this->payWithExistingPaymentMethod($request);
+                } catch (Exception $e) {
+                    Log::error($e->getMessage());
+                    return redirect()->back()->withErrors($e->getMessage())->withInput();
+                }
+                break;
+        }
+
+        $this->clearBillingCache();
+        if ($result->success == true)
+        {
+            return redirect()->action("BillingController@index")->with('success', utrans("billing.paymentWasSuccessful"));
+        }
+        else
+        {
+            return redirect()->back()->withErrors(utrans("errors.paymentFailed"));
+        }
+
     }
 
     /**
@@ -407,6 +436,21 @@ class BillingController extends Controller
         unset($request);
 
         return $result;
+    }
+
+    /**
+     * Make a payment with a new tokenized credit card
+     * @param TokenizedCreditCardPaymentRequest $request
+     * @return mixed
+     */
+    public function payWithNewTokenizedCreditCard(TokenizedCreditCardPaymentRequest $request)
+    {
+        if (config("customer_portal.enable_credit_card_payments") == false)
+        {
+            throw new InvalidArgumentException(utrans("errors.creditCardPaymentsDisabled"));
+        }
+
+        dd($request);
     }
 
 
