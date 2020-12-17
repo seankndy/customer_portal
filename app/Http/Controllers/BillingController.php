@@ -120,6 +120,12 @@ class BillingController extends Controller
         return view('pages.billing.make_payment', compact('billingDetails', 'paymentMethods'));
     }
 
+    public function submitTokenizedPayment(CreditCardPaymentRequest $request)
+    {
+        dd($request);
+        return redirect()->action("BillingController@index")->with('success', utrans("billing.paymentWasSuccessful"));
+    }
+
     /**
      * Process a submitted payment
      * @param CreditCardPaymentRequest $request
