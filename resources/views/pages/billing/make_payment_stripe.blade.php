@@ -50,7 +50,7 @@
             
             <!-- Stripe Elements  -->
             
-            <div class="col-lg-12 col-12">
+            <div class="col-lg-12 col-12 new_card">
                <div class="form-group" id="stripe_container" data-secret="<?= $secret ?>" >
                   <label for="name">Stripe Elements Testing</label>
                   <div id="card-element"></div>
@@ -128,7 +128,7 @@
                </small>
             </div>
             <div class="col-12 col-md-12 mt-5">
-               <button id="submit" type="submit" class="btn btn-primary">{{utrans("billing.submitPayment")}}</button>
+               <button id="submit_payment" type="submit" class="btn btn-primary">{{utrans("billing.submitPayment")}}</button>
             </div>
             {!! Form::close() !!}
          </div>
