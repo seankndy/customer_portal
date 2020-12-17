@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Billing\GoCardless;
-use App\Billing\Nightmares;
+use App\Billing\PortalStripe;
 use App\Http\Requests\CreateBankAccountRequest;
 use App\Http\Requests\CreateCreditCardRequest;
 use App\Http\Requests\CreateTokenizedCreditCardRequest;
@@ -113,7 +113,7 @@ class BillingController extends Controller
 
         if (\config('customer_portal.stripe_enabled') == 1)
         {
-            $stripe = new Nightmares();
+            $stripe = new PortalStripe();
             $secret = $stripe->setupIntent();
             return view('pages.billing.make_payment_stripe', compact('billingDetails', 'paymentMethods', 'secret'));
         }
@@ -269,7 +269,7 @@ class BillingController extends Controller
             case "credit_card":
                 if (config("customer_portal.stripe_enabled") == 1)
                 {
-                    $stripe = new Nightmares();
+                    $stripe = new PortalStripe();
                     return view("pages.billing.add_card_stripe", [
                         'secret' => $stripe->setupIntent()
                     ]);

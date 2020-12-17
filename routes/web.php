@@ -61,7 +61,7 @@ Route::group(['middleware' => ['language']], function () {
             Route::get('/paypal/{temporary_token}/cancel', 'PayPalController@cancelPayment');
 
             /** Stripe Routes */
-            Route::get('/stripe/{payment_method_id}', 'StripeController@paymentMethod');
+            Route::get('/stripe/{id}', 'StripeController@paymentMethod');
 
             /** Subdivisions for cards */
             Route::get("subdivisions/{country}", "SubdivisionController@show");

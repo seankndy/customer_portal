@@ -2,30 +2,29 @@
 
 namespace App\Http\Controllers;
 
+use App\Billing\PortalStripe;
 use Illuminate\Http\Request;
 use Stripe;
 
 class StripeController extends Controller
 {
-
-    protected $api_key;
+    protected $stripe;
 
     public function __construct()
     {
-        $this->api_key = config("customer_portal.stripe_api_key");
+        $this->stripe = new PortalStripe();
     }
 
     /**
      * Return PaymentMethod associated with ID
      *
-     * @param string $paymentMethodId
+     * @param string $id
      * @return mixed
      */
-    public function paymentMethod(Request $request, $paymentMethodId)
+    public function paymentMethod(Request $request, $id)
     {
-        Stripe\Stripe::setApiKey($this->api_key);
         try {
-            return Stripe\PaymentMethod::retrieve($paymentMethodId);
+            return $this->stripe->paymentMethod($id);
         } catch (Stripe\Exception\ApiErrorException $e)
         {
             return redirect()->back()->withErrors(utrans("errors.stripePaymentMethodNotFound"));
