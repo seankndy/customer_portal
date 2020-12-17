@@ -109,6 +109,14 @@ class BillingController extends Controller
             return redirect()->back()->withErrors(utrans("errors.addAPaymentMethod"));
         }
 
+        if (\config('customer_portal.stripe_enabled') == 1)
+        {
+            $stripe = new Nightmares();
+            return view('pages.billing.make_payment_stripe', [
+                'secret' => $stripe->setupIntent()
+            ]);
+        }
+
         return view('pages.billing.make_payment', compact('billingDetails', 'paymentMethods'));
     }
 
