@@ -54,6 +54,7 @@ Route::group(['middleware' => ['language']], function () {
             Route::patch('/payment_methods/{payment_methods}/toggle_auto', 'BillingController@toggleAutoPay');
             Route::get('/payment', 'BillingController@makePayment');
             Route::post('/payment', 'BillingController@submitPayment');
+            Route::post('/tokenized_payment', 'BillingController@submitTokenizedPayment');
 
             /** Paypal Routes */
             Route::get('/paypal/{temporary_token}/complete', 'PayPalController@completePayment');

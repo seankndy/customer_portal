@@ -112,15 +112,19 @@ class BillingController extends Controller
         if (\config('customer_portal.stripe_enabled') == 1)
         {
             $stripe = new Nightmares();
-            return view('pages.billing.make_payment_stripe', [
-                'secret' => $stripe->setupIntent()
-            ]);
+            $clientSecret = $stripe->setupIntent();
+            return view('pages.billing.make_payment_stripe', compact('billingDetails', 'paymentMethods', 'clientSecret'));
         }
 
         return view('pages.billing.make_payment', compact('billingDetails', 'paymentMethods'));
     }
 
-    public function submitTokenizedPayment(CreditCardPaymentRequest $request)
+    /**
+     * Process a tokenized submitted payment
+     * @param TokenizedCreditCardPaymentRequest $request
+     * @return $this
+     */
+    public function submitTokenizedPayment(TokenizedCreditCardPaymentRequest $request)
     {
         dd($request);
         return redirect()->action("BillingController@index")->with('success', utrans("billing.paymentWasSuccessful"));
