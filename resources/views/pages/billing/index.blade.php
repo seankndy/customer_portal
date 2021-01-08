@@ -166,6 +166,7 @@
                      <div class="card">
                         <div class="card-body">
                            <div class="row align-items-center">
+                              @if($values["currentUsage"] && isset($values["currentUsage"]["billable"]))
                               <div class="col">
                                  <!-- Title -->
                                  <h6 class="card-title text-uppercase text-muted mb-2">
@@ -187,6 +188,7 @@
                                  </div>
                                  <!-- / .row -->
                               </div>
+                              @endif
                               <div class="col-auto">
                                  <!-- Icon -->
                                  <span class="h2 fe fe-activity text-muted mb-0"></span>

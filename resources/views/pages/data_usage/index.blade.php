@@ -40,6 +40,7 @@
       </div>
       <div class="card-body">
          <div class="row align-items-center">
+            @if($currentUsage)
             <div class="col">
                <div class="row align-items-center no-gutters">
                   <div class="col-auto">
@@ -57,6 +58,7 @@
                </div>
                <!-- / .row -->
             </div>
+            @endif
             <div class="col-auto">
                <!-- Heading -->
                <span class="h2 ml-1 mr-2 mb-0">
@@ -95,9 +97,9 @@
 </div>
 @endsection
 @section('additionalJS')
-<script>
+<script type="text/javascript" nonce="EDNnf03nceIOfn39fn3e9h3sdfa">
    var historicalUsage = {!! $historicalUsage !!};
-   var dataUsageLabel = '{{utrans("data_usage.usage")}}';
+   var dataUsageLabel = "{{ $dataUsageLabel }}";
 </script>
 <script src="/assets/js/pages/data_usage/index.js" type="text/javascript"></script>
 @endsection

@@ -59,7 +59,7 @@ class BillingController extends Controller
 
 	    $historicalUsage = $this->getHistoricalUsage();
         $policyDetails = $this->getPolicyDetails();
-        $currentUsage = $historicalUsage[0];
+        $currentUsage = $historicalUsage ? $historicalUsage[0] : [];
         $calculatedCap = $policyDetails->policy_cap_in_gigabytes + round($policyDetails->rollover_available_in_bytes/1000**3, 2) + round($policyDetails->purchased_top_off_total_in_bytes/1000**3, 2);
 
         $values = [
@@ -70,8 +70,12 @@ class BillingController extends Controller
             'available_funds' => $billingDetails->available_funds,
             'payment_past_due' => $this->isPaymentPastDue(),
             'balance_minus_funds' => bcsub($billingDetails->total_balance, $billingDetails->available_funds, 2),
-            'currentUsage' => $currentUsage
+            'currentUsage' => $currentUsage,
+            'policy_details' => $policyDetails,
+            'historical_usage' => $historicalUsage,
         ];
+
+        // dd($values);
 
         $systemSetting = SystemSetting::firstOrNew(['id' => 1]);
 
