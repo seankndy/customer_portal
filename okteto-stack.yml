@@ -2,7 +2,6 @@ name: sonar-k8s
 services:
   redis:
     image: redis:5.0.4-alpine
-    restart: always
     ports:
       - 6379
     resources:
