@@ -1,0 +1,28 @@
+name: sonar-k8s
+services:
+  redis:
+    image: redis:5.0.4-alpine
+    restart: always
+    ports:
+      - 6379
+    resources:
+      storage: 3Gi
+
+  web:
+    stop_grace_period: 1
+    ports:
+      - 8080
+    image: okteto.dev/web:latest
+    environment:
+      - APP_ENV=local
+      - APP_KEY=base64:pRF1RVRtX08db63xZuehIZ8KVB8oERLnzc1Ohxp0Fgk=
+      - APP_DEBUG=true
+      - APP_LOG_LEVEL=debug
+      - API_USERNAME=admin
+      - API_PASSWORD=sonar
+      - SONAR_URL=https://web-kevin-newman.sonardev.work/
+    resources:
+      storage: 10Gi
+    annotations:
+      dev.okteto.com/auto-ingress: "private"
+      dev.okteto.com/generate-host: "true"
