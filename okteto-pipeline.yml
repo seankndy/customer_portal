@@ -1,0 +1,7 @@
+icon: https://sonar.software/assets/images/global/logo-badge.svg
+deploy:
+  - okteto build -t registry.sonardev.work/${OKTETO_NAMESPACE}/web:latest -f okteto.Dockerfile --progress=plain
+  - okteto build -t registry.sonardev.work/${OKTETO_NAMESPACE}/okteto.postgres:latest -f okteto.postgres.Dockerfile --progress=plain
+  - okteto stack deploy -f okteto-stack.yml
+devs:
+  - okteto.yml

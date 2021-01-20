@@ -1,0 +1,20 @@
+name: web
+context: ${SONAR_DEV_K8S_CONTEXT:okteto_sonardev_work}
+securityContext:
+  runAsUser: 33
+  runAsGroup: 33
+  fsGroup: 33
+  capabilities:
+    add:
+      - SYS_PTRACE
+sync:
+  - customer-portal:/usr/share/customer-portal
+command: bash /usr/share/customer-portal/okteto.sh
+persistentVolume:
+  enabled: true
+  storageClass: managed-premium
+  size: 10Gi
+workdir: /usr/share/customer-portal
+remote: 22222
+volumes:
+  - /var/www/.cache
