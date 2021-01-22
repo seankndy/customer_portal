@@ -9,7 +9,6 @@ securityContext:
       - SYS_PTRACE
 sync:
   - customer-portal:/usr/share/customer-portal
-command: bash /usr/share/customer-portal/okteto.sh
 persistentVolume:
   enabled: true
   storageClass: managed-premium
