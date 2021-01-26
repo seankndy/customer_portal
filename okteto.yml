@@ -8,7 +8,7 @@ securityContext:
     add:
       - SYS_PTRACE
 sync:
-  - customer-portal:/usr/share/public
+  - public:/usr/share/public
 persistentVolume:
   enabled: true
   storageClass: managed-premium
