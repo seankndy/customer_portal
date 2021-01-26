@@ -15,11 +15,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-if [ $UID != 0 ]; then
-    echo This must be run as root.
-    exit 1
-fi
-
 if ! [ -x "$(command -v docker)" ]; then
     echo "### docker is not installed, installing it now..."
     apt-get update
