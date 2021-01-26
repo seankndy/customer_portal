@@ -1,6 +1,7 @@
 #!/bin/bash
 
-sudo /etc/my_init.d/97_composer.sh
+chown -R www-data:www-data /var/www/
+setuser www-data composer config http-basic.nova.laravel.com simon@sonar.software PvCtpAwCy5pdghRG1mExEsCYnut0vHgqUZVqVwpc
 
 echo "Installing PHP packages."
 (cd /usr/share/public; composer install -q --no-scripts --no-interaction --optimize-autoloader --no-progress)
