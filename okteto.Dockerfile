@@ -24,7 +24,7 @@ RUN add-apt-repository ppa:ondrej/php \
 WORKDIR /var/www/html
 
 COPY --chown=www-data --from=composer:1.8.4 /usr/bin/composer /tmp/composer
-COPY composer.json composer.lock ./
+COPY composer.json composer.lock  ./
 RUN mkdir -p vendor \
   && chown www-data:www-data vendor \
   && COMPOSER_CACHE_DIR=/dev/null setuser www-data /tmp/composer install --no-dev --no-interaction --no-scripts --no-autoloader
@@ -43,7 +43,7 @@ COPY deploy/conf/cron.d/* /etc/cron.d/
 RUN mkdir -p /etc/my_init.d
 COPY deploy/*.sh /etc/my_init.d/
 
-RUN chmod +x /usr/share/public/install.sh \
+RUN setuser www-data chmod +x /usr/share/public/install.sh \
   && chmod +x /etc/my_init.d/99_init_sonar.sh \
   && chmod +x /etc/my_init.d/97_composer.sh
 
