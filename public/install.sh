@@ -3,10 +3,10 @@
 sudo /etc/my_init.d/97_composer.sh
 
 echo "Installing PHP packages."
-(cd /usr/share/sonar; composer install -q --no-scripts --no-interaction --optimize-autoloader --no-progress)
+(cd /usr/share/public; composer install -q --no-scripts --no-interaction --optimize-autoloader --no-progress)
 
 echo "Installing JavaScript packages"
-(cd /usr/share/sonar; yarn install -s --prefer-offline --frozen-lockfile --non-interactive --cache-folder /var/www/.cache/yarn --emoji=true --ignore-optional)
+(cd /usr/share/public; yarn install -s --prefer-offline --frozen-lockfile --non-interactive --cache-folder /var/www/.cache/yarn --emoji=true --ignore-optional)
 
 APP_KEY="base64:$(head -c32 /dev/urandom | base64)";
 
