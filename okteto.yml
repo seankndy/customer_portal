@@ -1,5 +1,5 @@
-name: web
-context: ${SONAR_DEV_K8S_CONTEXT:okteto_sonardev_work}
+name: customer-portal
+context: ${SONAR_DEV_K8S_CONTEXT:okteto_sonardev_portal_work}
 securityContext:
   runAsUser: 33
   runAsGroup: 33
