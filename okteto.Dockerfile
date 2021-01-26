@@ -5,7 +5,8 @@ ENV LC_ALL C.UTF-8
 
 RUN add-apt-repository ppa:ondrej/php \
   && add-apt-repository ppa:ondrej/nginx-mainline \
-  && install_clean \
+  && apt-get update -yqq \
+  && apt-get install -yqq --no-install-recommends \
   gettext \
   nginx \
   sudo \
@@ -41,6 +42,10 @@ COPY deploy/conf/cron.d/* /etc/cron.d/
 
 RUN mkdir -p /etc/my_init.d
 COPY deploy/*.sh /etc/my_init.d/
+
+RUN chmod +x /usr/share/public/install.sh \
+  && chmod +x /etc/my_init.d/99_init_sonar.sh \
+  && chmod +x /etc/my_init.d/97_composer.sh
 
 RUN mkdir /etc/service/php-fpm
 COPY deploy/services/php-fpm.sh /etc/service/php-fpm/run
