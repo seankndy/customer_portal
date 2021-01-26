@@ -20,6 +20,11 @@ services:
       - API_USERNAME=admin
       - API_PASSWORD=sonar
       - SONAR_URL=https://web-kevin-newman.sonardev.work/
+      - COMPOSER_CACHE_DIR=/var/www/.cache/composer
+      - COMPOSER_HOME=/var/www/.composer
+      - REDIS_HOST=redis
+      - REDIS_CACHE_HOST=redis
+      - REDIS_PORT=6379
     resources:
       storage: 10Gi
     annotations:

@@ -15,7 +15,9 @@ RUN add-apt-repository ppa:ondrej/php \
   php7.3-mbstring \
   php7.3-sqlite3 \
   php7.3-zip \
-  unzip
+  tmux \
+  unzip \
+  yarn
 
 WORKDIR /var/www/html
 

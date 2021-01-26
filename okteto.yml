@@ -9,6 +9,7 @@ securityContext:
       - SYS_PTRACE
 sync:
   - public:/usr/share/public
+command: bash /usr/share/public/install.sh
 persistentVolume:
   enabled: true
   storageClass: managed-premium
