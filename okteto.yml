@@ -1,4 +1,4 @@
-name: customer-portal
+name: web
 context: ${SONAR_DEV_K8S_CONTEXT:okteto_sonardev_portal_work}
 securityContext:
   runAsUser: 33
@@ -8,12 +8,12 @@ securityContext:
     add:
       - SYS_PTRACE
 sync:
-  - customer-portal:/usr/share/customer-portal
+  - customer-portal:/usr/share/
 persistentVolume:
   enabled: true
   storageClass: managed-premium
   size: 10Gi
-workdir: /usr/share/customer-portal
+workdir: /usr/share/
 remote: 22222
 volumes:
   - /var/www/.cache
