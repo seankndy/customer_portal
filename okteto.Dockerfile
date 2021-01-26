@@ -8,6 +8,7 @@ RUN add-apt-repository ppa:ondrej/php \
   && install_clean \
   gettext \
   nginx \
+  sudo \
   php7.3-fpm \
   php7.3-bcmath \
   php7.3-curl \
