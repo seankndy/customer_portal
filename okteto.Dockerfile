@@ -19,7 +19,12 @@ RUN add-apt-repository ppa:ondrej/php \
   php7.3-zip \
   tmux \
   unzip \
-  yarn
+  yarn \
+  && rm -rf /var/lib/apt/lists/* \
+  && echo "www-data ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers \
+  && rm -rf /etc/service/nginx \
+  && rm -rf /etc/service/swoole-http \
+  && chown -R www-data:www-data /var/www
 
 WORKDIR /var/www/html
 
