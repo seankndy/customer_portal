@@ -8,12 +8,12 @@ securityContext:
     add:
       - SYS_PTRACE
 sync:
-  - customer-portal:/usr/share/
+  - customer-portal:/usr/share/public
 persistentVolume:
   enabled: true
   storageClass: managed-premium
   size: 10Gi
-workdir: /usr/share/
+workdir: /usr/share/public
 remote: 22222
 volumes:
   - /var/www/.cache

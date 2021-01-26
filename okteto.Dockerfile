@@ -1,3 +1,4 @@
+#syntax=docker/dockerfile:1.2
 FROM phusion/baseimage:0.11 as base
 
 ENV LC_ALL C.UTF-8

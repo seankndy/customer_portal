@@ -1,0 +1,10 @@
+.psalm/
+.vscode
+.env.example
+.git
+/node_modules/
+/vendor/
+/storage/db_snapshots/
+/storage/snowflake_*/
+/storage/app/fake/
+*.DS_Store
