@@ -1,4 +1,4 @@
-FROM sonarsoftware/customerportal:latest
+FROM sonarsoftware/customerportal:b118cb092598e98afd414eb4b634226bdb06a910
 
 COPY --chown=www-data --from=composer:1.8.4 /usr/bin/composer /usr/local/bin/composer
 
