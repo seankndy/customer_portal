@@ -12,13 +12,13 @@ services:
       - APP_ENV=local
       - APP_KEY=base64:7qBm4Fss5HEZQu+lJHyh9+j0AQl7es/mg2aPIuk1rLo=
       - API_USERNAME=admin
-      - API_PASSWORD=sonar
+      - API_PASSWORD=sonarsonar
       - REDIS_HOST=redis
       - REDIS_PORT=6379
       - NGINX_HOST=customer-portal-${OKTETO_NAMESPACE}.sonar.church
         #- SONAR_URL=http://web-${OKTETO_NAMESPACE}.sonar.church:8080
       - OKTETO_SONAR_HOST=web-${OKTETO_NAMESPACE}.sonar.church
-      - SONAR_URL=https://84d998867152.ngrok.io/
+      - SONAR_URL=https://84d998867152.ngrok.io
     annotations:
       dev.okteto.com/auto-ingress: "true" 
       dev.okteto.com/generate-host: "true"
