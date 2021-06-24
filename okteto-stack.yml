@@ -16,9 +16,8 @@ services:
       - REDIS_HOST=redis
       - REDIS_PORT=6379
       - NGINX_HOST=customer-portal-${OKTETO_NAMESPACE}.sonar.church
-        #- SONAR_URL=http://web-${OKTETO_NAMESPACE}.sonar.church:8080
       - OKTETO_SONAR_HOST=web-${OKTETO_NAMESPACE}.sonar.church
-      - SONAR_URL=https://84d998867152.ngrok.io
+      - SONAR_URL=https://91c513e1a865.ngrok.io
     annotations:
       dev.okteto.com/auto-ingress: "true" 
       dev.okteto.com/generate-host: "true"
