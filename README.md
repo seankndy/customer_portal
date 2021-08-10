@@ -93,3 +93,16 @@ Try removing the created storage volume by executing `sudo docker volume rm cust
 ## Customizing the portal
 
 This portal is built using [Laravel](https://laravel.com/). You are welcome to fork and modify this repository for your own needs! Do not attempt to customize the files inside the existing Docker container, as they will be automatically overwritten during upgrade. If you need help customizing this portal beyond what is currently available, we recommend [Solutions4Ebiz](https://www.solutions4ebiz.com/) as an experienced third party developer.
+
+
+## LOCAL DEV
+1. Make sure to add `portal.sonar.dev` to your hosts file.
+2. Copy the `scripts` directory from your sonar source folder to the root of this repo
+3. Start your instance seeded with demo on 1.sonar.dev locally
+4. Run `get-container-ip.sh` and put the output into `docker-compose.yml` under `extra_hosts`, replacing the one that's there
+5. `docker-compose build`
+6. `docker-compose up -d`
+7. `docker-compose exec app bash`
+8. Inside the container, run `./add-sonar-cert.sh`
+9. (optional) verify that it all worked with `curl https://1.sonar.dev`
+10. Go to `portal.sonar.dev:7001` et viola!

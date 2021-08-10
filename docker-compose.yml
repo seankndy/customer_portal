@@ -9,20 +9,26 @@ services:
     restart: always
     tty: true
     ports:
-      - "80:80"
-      - "443:443"
+      - "7000:80"
+      - "7001:443"
     volumes:
       - ./data/certbot/conf:/etc/letsencrypt
       - ./data/certbot/www:/var/www/certbot
       - ./public/assets/img/logo.png:/var/www/html/public/assets/img/logo.png
       - ./public/assets/img/cover.png:/var/www/html/public/assets/img/cover.png
-      - storage:/var/www/html/storage
+      - ./deploy/conf/nginx/sonar-customerportal.template:/etc/nginx/conf.d/customerportal.template
+      - ./:/var/www/html
+      - ./vendor:/var/www/html/vendor
+      - /var/www/html/storage
+      - ./storage/database.sqlite:/var/www/html/storage/database.sqlite
     env_file:
      - .env
     environment:
       REDIS_HOST: redis
     depends_on:
       - redis
+    extra_hosts: 
+      - "1.sonar.dev:172.21.0.1"
 
   redis:
     image: redis:5.0.4-alpine 
@@ -42,7 +48,3 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     command: sonar-customerportal
-
-volumes:
-  storage:
-    driver: local

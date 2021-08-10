@@ -27,7 +27,7 @@ RUN mkdir -p vendor \
 
 COPY --chown=www-data . .
 
-RUN COMPOSER_CACHE_DIR=/dev/null setuser www-data /tmp/composer install --no-dev --no-interaction --no-scripts --classmap-authoritative \
+RUN COMPOSER_CACHE_DIR=/dev/null setuser www-data /tmp/composer install --no-interaction --no-scripts --classmap-authoritative \
  && rm -rf /tmp/composer
 
 COPY deploy/conf/nginx/sonar-customerportal.template /etc/nginx/conf.d/customerportal.template
