@@ -11,7 +11,7 @@ class Reflection
     }
 
     /**
-     * Get property's type, wrap property type in array if the type is an array-of/collection-of the type
+     * Get property's type, wrap property type in array if the type is an array-of the type
      * @return array|string|null
      */
     public static function getPropertyType(\ReflectionProperty $property)
@@ -21,8 +21,6 @@ class Reflection
                 $type = $m[1];
                 if (substr($type, -2) == '[]') {
                     return [substr($type, 0, -2)];
-                } else if (preg_match('/<(.+?),\s*(.+?)>$/', $type, $m)) {
-                    return [$m[2]];
                 } else {
                     return $type;
                 }
