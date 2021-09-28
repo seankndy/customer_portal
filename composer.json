@@ -22,7 +22,9 @@
         "doctrine/dbal": "^2.10",
         "stripe/stripe-php": "^7",
         "sonarsoftwareinc/customer_portal_framework": "^1.0.23",
-        "spatie/laravel-csp": "^2.1.2"
+        "spatie/laravel-csp": "^2.1.2",
+        "ext-json": "*",
+        "gmostafa/php-graphql-client": "^1.13"
     },
     "repositories": [
         {

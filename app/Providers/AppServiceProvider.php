@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\SystemSetting;
+use GuzzleHttp\Client as GuzzleClient;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -74,6 +75,14 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        //
+        $this->app->bind(\GuzzleHttp\ClientInterface::class, GuzzleClient::class);
+
+        $this->app->singleton(\App\SonarApi\Client::class, function ($app) {
+            return new \App\SonarApi\Client(
+                app(\GuzzleHttp\ClientInterface::class),
+                config('sonar.api_key'),
+                config('sonar.instance_name'),
+            );
+        });
     }
 }
