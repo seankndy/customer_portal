@@ -21,9 +21,4 @@ class Address extends BaseResource
     public ?string $longitude;
 
     public bool $serviceable;
-
-    public static function fromJsonObject(object $jsonObject): self
-    {
-        return new self((array)$jsonObject);
-    }
 }
