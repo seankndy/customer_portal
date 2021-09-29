@@ -3,7 +3,6 @@
 namespace App\SonarApi\Queries;
 
 use App\SonarApi\Client;
-use App\SonarApi\Exceptions\ResourceNotFoundException;
 use App\SonarApi\Resources\BaseResource;
 use GraphQL\QueryBuilder\QueryBuilder;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -46,7 +45,6 @@ abstract class BaseQuery implements Query
     /**
      * Execute the query.
      * @return Collection<int, BaseResource>
-     * @throws ResourceNotFoundException
      * @throws \App\SonarApi\Exceptions\SonarHttpException
      * @throws \App\SonarApi\Exceptions\SonarQueryException
      */
@@ -54,17 +52,12 @@ abstract class BaseQuery implements Query
     {
         $response = $this->client->query($this);
 
-        if (!$response->{$this->objectName()}->entities) {
-            throw new ResourceNotFoundException("Resource(s) not found.");
-        }
-
         return collect($response->{$this->objectName()}->entities)
             ->map(fn($entity) => ($this->resource())::fromJsonObject($entity));
     }
 
     /**
      * @throws \App\SonarApi\Exceptions\SonarHttpException
-     * @throws ResourceNotFoundException
      * @throws \App\SonarApi\Exceptions\SonarQueryException
      */
     public function first()

@@ -11,19 +11,13 @@ use App\Http\Requests\SendPasswordResetRequest;
 use App\PasswordReset;
 use App\Services\LanguageService;
 use App\SonarApi\Client;
-use App\SonarApi\Exceptions\ResourceNotFoundException;
 use App\SystemSetting;
 use App\Traits\Throttles;
 use App\UsernameLanguage;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
-
-use App\Http\Requests;
 use Illuminate\Support\Facades\App;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use SonarSoftware\CustomerPortalFramework\Controllers\AccountAuthenticationController;
@@ -83,8 +77,6 @@ class AuthenticationController extends Controller
             $request->session()->forget('account');
             $request->session()->forget('child_accounts');
             return redirect()->back()->withErrors(utrans("errors.couldNotFindAccount",[],$request));
-        } catch (ResourceNotFoundException $e) {
-
         }
 
         $this->resetThrottleValue("login", $this->generateLoginThrottleHash($request));
