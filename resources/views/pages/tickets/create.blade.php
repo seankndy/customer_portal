@@ -28,8 +28,8 @@
                {!! Form::open(['action' => 'TicketController@store', 'id' => 'ticketForm']) !!}
                @if (count($accounts) > 1)
                <div class="form-group">
-                  <label for="account">{{utrans('general.account')}}</label>
-                  <select class="form-control">
+                  <label for="account_id">{{utrans('general.account')}}</label>
+                  <select class="form-control" name="account_id">
                      @foreach($accounts as $account)
                         <option value="{{$account->id}}">{{(string)$account}}</option>
                      @endforeach

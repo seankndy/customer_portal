@@ -2,17 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\CreateAccountTicketAction;
+use App\Actions\CreateTicketReplyAction;
+use App\DataTransferObjects\AccountTicketData;
+use App\DataTransferObjects\TicketReplyData;
 use App\Http\Requests\TicketReplyRequest;
 use App\Http\Requests\TicketRequest;
 use App\SonarApi\Client;
-use App\SonarApi\Mutations\CreateTicketReply;
-use App\SonarApi\Mutations\Inputs\CreateTicketReplyMutationInput;
-use Exception;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
-use SonarSoftware\CustomerPortalFramework\Controllers\AccountTicketController;
-use SonarSoftware\CustomerPortalFramework\Models\Ticket;
 
 class TicketController extends Controller
 {
@@ -79,36 +78,32 @@ class TicketController extends Controller
 
     /**
      * Create a new ticket
-     * @param TicketRequest $request
      * @return $this|\Illuminate\Http\RedirectResponse
      */
-    public function store(TicketRequest $request)
-    {
+    public function store(
+        TicketRequest $request,
+        CreateAccountTicketAction $createAccountTicketAction,
+        CreateTicketReplyAction $createTicketReplyAction
+    ) {
         try {
-            $ticket = new Ticket([
-                'account_id' => get_user()->account_id,
-                'email_address' => get_user()->email_address,
-                'subject' => $request->input('subject'),
-                'description' => $request->input('description'),
-                'ticket_group_id' => config("customer_portal.ticket_group_id"),
-                'priority' => config("customer_portal.ticket_priority"),
-                'inbound_email_account_id' => config("customer_portal.inbound_email_account_id"),
-            ]);
-        } catch (Exception $e) {
+            $ticket = $createAccountTicketAction(AccountTicketData::fromRequest($request));
+
+            $ticketReply = $createTicketReplyAction(new TicketReplyData([
+                'ticketId' => $ticket->id,
+                'body' => $request->input('description'),
+                'author' => get_user()->contact_name,
+                'authorEmail' => get_user()->email_address,
+            ]));
+
+            \array_unshift($ticket->ticketReplies, $ticketReply);
+            $tickets = $this->getTickets()->prepend($ticket);
+            Cache::tags('tickets')->put(get_user()->account_id, $tickets, self::CACHE_TTL);
+
+            return redirect()->action("TicketController@index")->with('success', utrans("tickets.ticketCreated"));
+        } catch (\Exception $e) {
             Log::error($e->getMessage());
             return redirect()->back()->withErrors(utrans("errors.failedToCreateTicket"))->withInput();
         }
-
-        $accountTicketController = new AccountTicketController();
-        try {
-            $accountTicketController->createTicket($ticket, get_user()->contact_name, get_user()->email_address);
-        } catch (Exception $e) {
-            Log::error($e->getMessage());
-            return redirect()->back()->withErrors(utrans("errors.failedToCreateTicket"))->withInput();
-        }
-
-        $this->clearTicketCache();
-        return redirect()->action("TicketController@index")->with('success', utrans("tickets.ticketCreated"));
     }
 
     /**
@@ -116,8 +111,11 @@ class TicketController extends Controller
      * @param TicketReplyRequest $request
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function postReply(int $ticketId, TicketReplyRequest $request)
-    {
+    public function postReply(
+        int $ticketId,
+        TicketReplyRequest $request,
+        CreateTicketReplyAction $createTicketReplyAction
+    ) {
         $tickets = $this->getTickets();
 
         if (!($ticket = $tickets->filter(fn($t) => $t->id === $ticketId)->first())) {
@@ -126,17 +124,12 @@ class TicketController extends Controller
         }
 
         try {
-            $ticketReply = $this->sonarClient->mutations()->run(
-                new CreateTicketReply(
-                    new CreateTicketReplyMutationInput([
-                        'ticketId' => $ticketId,
-                        'body' => $request->input('reply'),
-                        'incoming' => true,
-                        'author' => get_user()->contact_name,
-                        'authorEmail' => get_user()->email_address,
-                    ])
-                )
-            );
+            $ticketReply = $createTicketReplyAction(new TicketReplyData([
+                'ticketId' => $ticketId,
+                'body' => $request->input('body'),
+                'author' => get_user()->contact_name,
+                'authorEmail' => get_user()->email_address,
+            ]));
 
             // prepend the ticket reply and update cache
             \array_unshift($ticket->ticketReplies, $ticketReply);
@@ -146,14 +139,6 @@ class TicketController extends Controller
         } catch (\Exception $e) {
             return redirect()->back()->withErrors(utrans("errors.failedToPostReply"));
         }
-    }
-
-    /**
-     * Clear the ticket cache
-     */
-    private function clearTicketCache()
-    {
-        Cache::tags("tickets")->forget(get_user()->account_id);
     }
 
     /**
