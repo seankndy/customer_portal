@@ -43,6 +43,7 @@
                   <tr>
                      <th>{{utrans("tickets.subject")}}</th>
                      <th>{{utrans("tickets.status")}}</th>
+                     <th class="d-none d-md-table-cell">{{utrans("general.date")}}</th>
                   </tr>
                </thead>
                <tbody>
@@ -54,17 +55,33 @@
                   @foreach($tickets as $ticket)
                   <tr>
                      <TD id="ticket-status">
-                        <a href="{{action("TicketController@show",['tickets' => $ticket->getTicketID()])}}">{{$ticket->getSubject()}}</a>
+                        <a href="{{action("TicketController@show",['tickets' => $ticket->id])}}">
+                           {{$ticket->subject}}
+                        </a>
+                        @if ($ticketAccounts[$ticket->id]->physicalAddress())
+                        <div class="small text-secondary">
+                           {{ (string)$ticketAccounts[$ticket->id] }}
+                        </div>
+                        @endif
                      </TD>
-                     @if($ticket->getOpen() === false)
+                     @if($ticket->status === 'CLOSED')
                      <TD id="ticket-status">
                         <div class="badge badge-soft-danger">
                            {{utrans("tickets.closed")}}
                         </div>
                      </TD>
                      @else
-                     <TD><span @if($ticket->getLastReplyIncoming() === false) class="badge badge-info" @else class="badge badge-light" @endif>@if($ticket->getLastReplyIncoming() === false) {{utrans("tickets.waitingYourResponse")}} @else {{utrans("tickets.waitingIspResponse", [ 'companyName' => Config::get("customer_portal.company_name")])}} @endif</span></TD>
+                     <TD>
+                        @if ($ticket->latestReply() && !$ticket->latestReply()->author)
+                           <span class="badge badge-info">{{utrans("tickets.waitingYourResponse")}}</span>
+                        @else
+                           <span class="badge badge-light">{{utrans("tickets.waitingIspResponse", [ 'companyName' => Config::get("customer_portal.company_name")])}}</span>
+                        @endif
+                     </TD>
                      @endif
+                     <TD class="d-none d-md-table-cell">
+                        {{ $ticket->updatedAt->diffForHumans() }}
+                     </TD>
                   </tr>
                   @endforeach
                </tbody>

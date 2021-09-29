@@ -41,11 +41,13 @@ class BillingController extends Controller
     private $frameworkDataUsageController;
     private $dataUsageController;
     private $accountBillingController;
+
     public function __construct()
     {
         $this->accountBillingController = new AccountBillingController();
-	$this->frameworkDataUsageController = new \SonarSoftware\CustomerPortalFramework\Controllers\DataUsageController();
+	    $this->frameworkDataUsageController = new \SonarSoftware\CustomerPortalFramework\Controllers\DataUsageController();
     }
+
     /**
      * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
      */

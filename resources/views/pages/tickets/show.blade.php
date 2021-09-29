@@ -8,11 +8,15 @@
       <div class="row">
          <div class="col ml-n2">
             <h4 class="card-title mb-1">
-               {{$ticket->getSubject()}}
+               {{$ticket->subject}}
+               <br>
+               <div class="small text-secondary">
+                  {{ (string)$account }}
+               </div>
             </h4>
             <hr>
-            @if(count($replies) > 0)
-            @foreach($replies as $reply)
+            @if(count($ticket->ticketReplies) > 0)
+            @foreach($ticket->ticketReplies as $reply)
             <div class="row">
                <div class="col ml-n2">
                   @if($reply->incoming == true)
@@ -26,7 +30,7 @@
                            </div>
                            <div class="col-auto">
                               <time class="comment-time-light">
-                              {{Formatter::datetime($reply->created_at, true)}} <i class="fe fe-clock ml-1"></i>
+                              {{$reply->createdAt->diffForHumans()}} <i class="fe fe-clock ml-1"></i>
                               </time>
                            </div>
                         </div>
@@ -41,13 +45,13 @@
                                  </div>
                                  <div class="col-auto">
                                     <time class="comment-time-dark">
-                                    {{Formatter::datetime($reply->created_at, true)}} <i class="fe fe-clock ml-1"></i>
+                                    {{$reply->createdAt->diffForHumans()}} <i class="fe fe-clock ml-1"></i>
                                     </time>
                                  </div>
                               </div>
                               @endif
                               <div class="comment-text">
-                                 {!! $reply->text !!}
+                                 {!! $reply->body !!}
                               </div>
                            </div>
                         </div>
@@ -62,7 +66,7 @@
    </div>
    <div class="card">
       <div class="card-body">
-         {!! Form::open(['action' => ['TicketController@postReply', 'tickets' => $ticket->getTicketID()], 'id' => 'replyForm', 'method' => 'post']) !!}
+         {!! Form::open(['action' => ['TicketController@postReply', 'tickets' => $ticket->id], 'id' => 'replyForm', 'method' => 'post']) !!}
          <div class="form-group">
             {!! Form::textarea("reply",null,['class' => 'form-control', 'id' => 'reply', 'placeholder' => utrans("tickets.postAReplyPlaceholder")]) !!}
          </div>

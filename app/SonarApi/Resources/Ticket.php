@@ -10,6 +10,10 @@ class Ticket extends BaseResource
 
     public ?int $parentTicketId;
 
+    public int $ticketableId;
+
+    public string $ticketableType;
+
     public string $status;
 
     public string $description;
@@ -38,11 +42,21 @@ class Ticket extends BaseResource
 
     /**
      * @var \App\SonarApi\Resources\TicketReply[]
+     * @meta sortBy created_at
+     * @meta sortDir DESC
      */
     public array $ticketReplies;
 
     /**
      * @var \App\SonarApi\Resources\TicketComment[]
+     * @meta sortBy created_at
+     * @meta sortDir DESC
      */
     public array $ticketComments;
+
+    public function latestReply(): ?TicketReply
+    {
+        return $this->ticketReplies ? $this->ticketReplies[0] : null;
+    }
+
 }

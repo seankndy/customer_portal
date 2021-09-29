@@ -26,6 +26,16 @@
          <div class="card">
             <div class="card-body">
                {!! Form::open(['action' => 'TicketController@store', 'id' => 'ticketForm']) !!}
+               @if (count($accounts) > 1)
+               <div class="form-group">
+                  <label for="account">{{utrans('general.account')}}</label>
+                  <select class="form-control">
+                     @foreach($accounts as $account)
+                        <option value="{{$account->id}}">{{(string)$account}}</option>
+                     @endforeach
+                  </select>
+               </div>
+               @endif
                <div class="form-group">
                   <label for="subject">{{utrans("tickets.subject")}}</label>
                   <div class="input-group input-group-merge">

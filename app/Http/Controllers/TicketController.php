@@ -4,69 +4,77 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\TicketReplyRequest;
 use App\Http\Requests\TicketRequest;
+use App\SonarApi\Client;
+use App\SonarApi\Mutations\CreateTicketReply;
+use App\SonarApi\Mutations\Inputs\CreateTicketReplyMutationInput;
 use Exception;
-use Illuminate\Http\Request;
-
-use App\Http\Requests;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Log;
+use Illuminate\View\View;
 use SonarSoftware\CustomerPortalFramework\Controllers\AccountTicketController;
-use SonarSoftware\CustomerPortalFramework\Exceptions\ApiException;
 use SonarSoftware\CustomerPortalFramework\Models\Ticket;
 
 class TicketController extends Controller
 {
-    /**
-     * Return ticket listing
-     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
-     */
-    public function index()
+    private const CACHE_TTL = 10;
+
+    private Client $sonarClient;
+
+    public function __construct(Client $sonarClient)
+    {
+        $this->sonarClient = $sonarClient;
+    }
+
+    public function index(): View
     {
         $tickets = $this->getTickets();
-        return view("pages.tickets.index", compact('tickets'));
+
+        $ticketAccounts = $this->associateTicketsToAccounts($tickets);
+
+        return view("pages.tickets.index", [
+            'tickets' => $tickets,
+            'ticketAccounts' => $ticketAccounts,
+        ]);
     }
 
     /**
      * Show an individual ticket
-     * @param $id
-     * @return $this|\Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     * @return \Illuminate\Http\RedirectResponse|View
      */
-    public function show($id)
+    public function show(int $id)
     {
-        //We need to ensure that this ticket belongs to this user
         $tickets = $this->getTickets();
-        foreach ($tickets as $ticket) {
-            try {
-                if ($ticket->getTicketID() == $id) {
-                    $accountTicketController = new AccountTicketController();
-                    $replies = $accountTicketController->getReplies($ticket, 1);
-                    //Clear the cache here, because you may see a ticket with ISP responses but the list may not show it yet
-                    $this->clearTicketCache();
-                    return view("pages.tickets.show", compact('replies', 'ticket'));
-                }
-            } catch (ApiException $e) {
-                Log::error($e->getMessage());
-                $this->clearTicketCache();
-                return redirect()->action("TicketController@index")->withErrors(utrans("errors.ticketNotFound"));
-            }
 
+        $ticketAccounts = $this->associateTicketsToAccounts($tickets);
+
+        if ($ticket = $tickets->filter(fn($t) => $t->id === $id)->first()) {
+            return view("pages.tickets.show", [
+                'ticket' => $ticket,
+                'account' => $ticketAccounts[$id],
+            ]);
         }
 
-        return redirect()->action("TicketController@index")->withErrors(utrans("errors.invalidTicketID"));
+        return redirect()->action("TicketController@index")
+            ->withErrors(utrans("errors.invalidTicketID"));
     }
 
     /**
      * Show ticket creation page
-     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     * @return \Illuminate\Http\RedirectResponse|View
      */
     public function create()
     {
-        $emailAddress = get_user()->email_address;
-        if ($emailAddress == null) {
-            return redirect()->action("ProfileController@show")->withErrors(utrans("errors.mustSetEmailAddress"));
+        if (!get_user()->email_address) {
+            return redirect()->action("ProfileController@show")
+                ->withErrors(utrans("errors.mustSetEmailAddress"));
         }
-        return view("pages.tickets.create");
+
+        return view('pages.tickets.create', [
+            'accounts' => [
+                session()->get('account'),
+                ...session()->get('child_accounts')->toArray()
+            ]
+        ]);
     }
 
     /**
@@ -105,26 +113,39 @@ class TicketController extends Controller
 
     /**
      * Post a reply to a ticket
-     * @param $ticketID
      * @param TicketReplyRequest $request
-     * @return $this
+     * @return \Illuminate\Http\RedirectResponse
      */
-    public function postReply($ticketID, TicketReplyRequest $request)
+    public function postReply(int $ticketId, TicketReplyRequest $request)
     {
-        $accountTicketController = new AccountTicketController();
         $tickets = $this->getTickets();
-        foreach ($tickets as $ticket) {
-            if ($ticket->getTicketID() == $ticketID) {
-                try {
-                    $accountTicketController->postReply($ticket, $request->input('reply'), get_user()->contact_name, get_user()->email_address);
-                    return redirect()->back()->with('success', utrans("tickets.replyPosted"));
-                } catch (Exception $e) {
-                    return redirect()->back()->withErrors(utrans("errors.failedToPostReply"));
-                }
-            }
+
+        if (!($ticket = $tickets->filter(fn($t) => $t->id === $ticketId)->first())) {
+            return redirect()->action("TicketController@index")
+                ->withErrors(utrans("errors.invalidTicketID"));
         }
 
-        return redirect()->back()->withErrors(utrans("errors.invalidTicketID"));
+        try {
+            $ticketReply = $this->sonarClient->mutations()->run(
+                new CreateTicketReply(
+                    new CreateTicketReplyMutationInput([
+                        'ticketId' => $ticketId,
+                        'body' => $request->input('reply'),
+                        'incoming' => true,
+                        'author' => get_user()->contact_name,
+                        'authorEmail' => get_user()->email_address,
+                    ])
+                )
+            );
+
+            // prepend the ticket reply and update cache
+            \array_unshift($ticket->ticketReplies, $ticketReply);
+            Cache::tags('tickets')->put(get_user()->account_id, $tickets, self::CACHE_TTL);
+
+            return redirect()->back()->with('success', utrans("tickets.replyPosted"));
+        } catch (\Exception $e) {
+            return redirect()->back()->withErrors(utrans("errors.failedToPostReply"));
+        }
     }
 
     /**
@@ -136,16 +157,45 @@ class TicketController extends Controller
     }
 
     /**
-     * Get tickets, cache them if currently uncached, otherwise return from cache
+     * Get tickets for current user accounts, cache them if currently uncached, otherwise return from cache
      * @return mixed
      */
     private function getTickets()
     {
-        if (!Cache::tags("tickets")->has(get_user()->account_id)) {
-            $accountTicketController = new AccountTicketController();
-            $tickets = $accountTicketController->getTickets(get_user()->account_id);
-            Cache::tags("tickets")->put(get_user()->account_id, $tickets, 10);
+        return Cache::tags('tickets')->remember(get_user()->account_id, self::CACHE_TTL, function () {
+            try {
+                return $this->sonarClient
+                    ->tickets()
+                    ->where('ticketable_id', [
+                        session()->get('account')->id,
+                        ...session()->get('child_accounts')->map(fn($account) => $account->id)->toArray()
+                    ])
+                    ->where('ticketable_type', 'Account')
+                    ->sortBy('updated_at', 'DESC')
+                    ->get();
+            } catch (\Exception $e) {
+                return collect([]);
+            }
+        });
+    }
+
+    /**
+     * @param \App\SonarApi\Resources\Ticket[] $tickets
+     * @return array
+     */
+    private function associateTicketsToAccounts(iterable $tickets): array
+    {
+        $accounts = collect([
+            session()->get('account'),
+            ...session()->get('child_accounts')->toArray()
+        ])->keyBy(fn($account) => $account->id);
+
+        // associate ticket to account
+        $ticketAccounts = [];
+        foreach ($tickets as $ticket) {
+            $ticketAccounts[$ticket->id] = $accounts[$ticket->ticketableId];
         }
-        return Cache::tags("tickets")->get(get_user()->account_id);
+
+        return $ticketAccounts;
     }
 }

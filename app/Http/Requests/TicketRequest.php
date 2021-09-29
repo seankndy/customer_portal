@@ -25,6 +25,7 @@ class TicketRequest extends FormRequest
     public function rules()
     {
         return [
+            'account' => '',
             'subject' => 'string|required',
             'description' => 'string|required',
         ];

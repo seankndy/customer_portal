@@ -14,6 +14,8 @@ class TicketReply extends BaseResource
 
     public string $body;
 
+    public bool $incoming;
+
     public Carbon $createdAt;
 
     public Carbon $updatedAt;

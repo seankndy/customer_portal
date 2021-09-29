@@ -23,13 +23,34 @@ class Account extends BaseResource
      */
     public array $addresses;
 
+
     public function physicalAddress(): ?Address
     {
-        return $this->addresses->filter(fn($a) => $a->type === 'PHYSICAL')->first();
+        foreach ($this->addresses as $address) {
+            if ($address->type === 'PHYSICAL') {
+                return $address;
+            }
+        }
+        return null;
     }
 
     public function mailingAddress(): ?Address
     {
-        return $this->addresses->filter(fn($a) => $a->type === 'MAILING')->first();
+        foreach ($this->addresses as $address) {
+            if ($address->type === 'MAILING') {
+                return $address;
+            }
+        }
+        return null;
+    }
+
+    public function __toString(): string
+    {
+        return $this->name .
+            ($this->physicalAddress()
+                ? " - " . $this->physicalAddress()->line1 . ', ' . $this->physicalAddress()->line2 . ', ' .
+                    $this->physicalAddress()->city . ' ' . $this->physicalAddress()->zip
+                : ''
+            );
     }
 }

@@ -5,6 +5,7 @@ namespace App\SonarApi\Resources;
 use App\SonarApi\Reflection;
 use Carbon\Carbon;
 use GraphQL\Query;
+use GraphQL\RawObject;
 use Illuminate\Support\Str;
 
 abstract class BaseResource
@@ -23,6 +24,7 @@ abstract class BaseResource
     /**
      * Return new instance of resource from the JSON response object using reflection.  You may override this method
      * on a concrete resource if this doesn't suffice or for increased performance.
+     * @throws \Exception
      */
     public static function fromJsonObject(object $jsonObject): self
     {
@@ -42,6 +44,8 @@ abstract class BaseResource
                     );
                 } else if (is_a($type, Carbon::class, true)) {
                     $data[$propertyVar] = $jsonObject->$jsonVar ? Carbon::createFromTimeString($jsonObject->$jsonVar) : null;
+                } else if (is_a($type, \DateTime::class, true)) {
+                    $data[$propertyVar] = $jsonObject->$jsonVar ? new \DateTime($jsonObject->$jsonVar) : null;
                 } else if (is_subclass_of($type, BaseResource::class)) {
                     $data[$propertyVar] = $type::fromJsonObject($jsonObject->$jsonVar);
                 } else {
@@ -72,8 +76,18 @@ abstract class BaseResource
 
             if (is_subclass_of($type, self::class)) {
                 if ($array) {
-                    $vars[] = (new Query(Str::snake($property->getName())))
+                    $query = (new Query(Str::snake($property->getName())))
                         ->setSelectionSet($type::graphQLQuery(true));
+
+                    $meta = Reflection::getPropertyMeta($property);
+                    if (isset($meta['sortBy'])) {
+                        $dir = \strtoupper($meta['sortDir'] ?? 'ASC');
+                        $query->setArguments([
+                            'sorter' => new RawObject('[{attribute:"'.$meta['sortBy'].'",direction:'.$dir.'}]')
+                        ]);
+                    }
+
+                    $vars[] = $query;
                 } else {
                     $classBaseName = \substr($type, \strrpos($type, '\\')+1);
                     $vars[] = (new Query(Str::snake(\lcfirst($classBaseName))))

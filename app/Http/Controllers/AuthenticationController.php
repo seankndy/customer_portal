@@ -10,6 +10,8 @@ use App\Http\Requests\PasswordUpdateRequest;
 use App\Http\Requests\SendPasswordResetRequest;
 use App\PasswordReset;
 use App\Services\LanguageService;
+use App\SonarApi\Client;
+use App\SonarApi\Exceptions\ResourceNotFoundException;
 use App\SystemSetting;
 use App\Traits\Throttles;
 use App\UsernameLanguage;
@@ -32,15 +34,28 @@ class AuthenticationController extends Controller
 {
     use Throttles;
 
+    private Client $sonarClient;
+
+    private AccountAuthenticationController $accountAuthenticationController;
+
+    public function __construct(
+        Client $sonarClient,
+        AccountAuthenticationController $accountAuthenticationController
+    ) {
+        $this->sonarClient = $sonarClient;
+        $this->accountAuthenticationController = $accountAuthenticationController;
+    }
+
     /**
      * Show the main login page
-     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     * @return \Illuminate\View\View
      */
     public function index()
     {
         $systemSetting = SystemSetting::firstOrNew([
             'id' => 1
         ]);
+
         return view("pages.root.index", compact('systemSetting'));
     }
 
@@ -54,16 +69,22 @@ class AuthenticationController extends Controller
         if ($this->getThrottleValue("login", $this->generateLoginThrottleHash($request)) > 10) {
             return redirect()->back()->withErrors(utrans("errors.tooManyFailedAuthenticationAttempts",[],$request));
         }
-        $accountAuthenticationController = new AccountAuthenticationController();
+
         try {
-            $result = $accountAuthenticationController->authenticateUser($request->input('username'), $request->input('password'));
+            $result = $this->accountAuthenticationController->authenticateUser($request->input('username'), $request->input('password'));
             $request->session()->put('authenticated', true);
             $request->session()->put('user', $result);
+            $request->session()->put('account', $this->sonarClient->accounts()->where('id', $result->account_id)->get()->first());
+            $request->session()->put('child_accounts', $this->sonarClient->accounts()->where('parent_account_id', $result->account_id)->get());
         } catch (AuthenticationException $e) {
             $this->incrementThrottleValue("login", $this->generateLoginThrottleHash($request));
             $request->session()->forget('authenticated');
             $request->session()->forget('user');
-            return redirect()->back()->withErrors(utrans("errors.loginFailed",[],$request));
+            $request->session()->forget('account');
+            $request->session()->forget('child_accounts');
+            return redirect()->back()->withErrors(utrans("errors.couldNotFindAccount",[],$request));
+        } catch (ResourceNotFoundException $e) {
+
         }
 
         $this->resetThrottleValue("login", $this->generateLoginThrottleHash($request));
@@ -87,17 +108,16 @@ class AuthenticationController extends Controller
     /**
      * Look up an email address to see if it can be used to create a new account.
      * @param LookupEmailRequest $request
-     * @return $this
+     * @return \Illuminate\Http\RedirectResponse
      */
     public function lookupEmail(LookupEmailRequest $request)
     {
         if ($this->getThrottleValue("email_lookup", md5($request->getClientIp())) > 10) {
             return redirect()->back()->withErrors(utrans("errors.tooManyFailedLookupAttempts",[],$request));
         }
-        
-        $accountAuthenticationController = new AccountAuthenticationController();
+
         try {
-            $result = $accountAuthenticationController->lookupEmail($request->input('email'));
+            $result = $this->accountAuthenticationController->lookupEmail($request->input('email'));
         } catch (Exception $e) {
             $this->incrementThrottleValue("email_lookup", md5($request->getClientIp()));
             Log::info($e->getMessage());
@@ -150,7 +170,7 @@ class AuthenticationController extends Controller
      * Show the account creation form
      * @param $token
      * @param Request $request
-     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     * @return \Illuminate\Http\RedirectResponse|\Illuminate\View\View
      */
     public function showCreationForm($token, Request $request)
     {
@@ -167,7 +187,7 @@ class AuthenticationController extends Controller
      * Create a new account
      * @param AccountCreationRequest $request
      * @param $token
-     * @return $this
+     * @return \Illuminate\Http\RedirectResponse
      */
     public function createAccount(AccountCreationRequest $request, $token)
     {
@@ -187,10 +207,9 @@ class AuthenticationController extends Controller
             $this->incrementThrottleValue("email_lookup", md5($token . $request->getClientIp()));
             return redirect()->back()->withErrors(utrans("errors.invalidEmailAddress",[],$request))->withInput();
         }
-        
-        $accountAuthenticationController = new AccountAuthenticationController();
+
         try {
-            $accountAuthenticationController->createUser($creationToken->account_id, $creationToken->contact_id, $request->input('username'), $request->input('password'));
+            $this->accountAuthenticationController->createUser($creationToken->account_id, $creationToken->contact_id, $request->input('username'), $request->input('password'));
         } catch (Exception $e) {
             return redirect()->back()->withErrors($e->getMessage())->withInput();
         }
@@ -213,7 +232,7 @@ class AuthenticationController extends Controller
     /**
      * Check for, and email a password reset if email is valid.
      * @param SendPasswordResetRequest $request
-     * @return $this|\Illuminate\Http\RedirectResponse
+     * @return \Illuminate\Http\RedirectResponse
      */
     public function sendResetEmail(SendPasswordResetRequest $request)
     {
@@ -221,9 +240,8 @@ class AuthenticationController extends Controller
             return redirect()->back()->withErrors(utrans("errors.tooManyPasswordResetRequests",[],$request));
         }
 
-        $accountAuthenticationController = new AccountAuthenticationController();
         try {
-            $result = $accountAuthenticationController->lookupEmail($request->input('email'), false);
+            $result = $this->accountAuthenticationController->lookupEmail($request->input('email'), false);
         } catch (Exception $e) {
             $this->incrementThrottleValue("password_reset", md5($request->getClientIp()));
             return redirect()->back()->withErrors(utrans("errors.resetLookupFailed",[],$request));
@@ -276,7 +294,7 @@ class AuthenticationController extends Controller
      * Show the password reset form, if valid.
      * @param $token
      * @param Request $request
-     * @return $this
+     * @return \Illuminate\Http\RedirectResponse|\Illuminate\View\View
      */
     public function showNewPasswordForm($token, Request $request)
     {
@@ -294,7 +312,7 @@ class AuthenticationController extends Controller
      * Attempt to reset the password to a new value
      * @param PasswordUpdateRequest $request
      * @param $token
-     * @return $this
+     * @return \Illuminate\Http\RedirectResponse
      */
     public function updateContactWithNewPassword(PasswordUpdateRequest $request, $token)
     {
