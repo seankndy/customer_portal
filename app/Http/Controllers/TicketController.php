@@ -9,14 +9,13 @@ use App\DataTransferObjects\TicketReplyData;
 use App\Http\Requests\TicketReplyRequest;
 use App\Http\Requests\TicketRequest;
 use App\SonarApi\Client;
-use Illuminate\Support\Facades\Cache;
+use App\SonarApi\Resources\Ticket;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
 
 class TicketController extends Controller
 {
-    private const CACHE_TTL = 10;
-
     private Client $sonarClient;
 
     public function __construct(Client $sonarClient)
@@ -24,15 +23,34 @@ class TicketController extends Controller
         $this->sonarClient = $sonarClient;
     }
 
-    public function index(): View
+    public function index(Request $request): View
     {
-        $tickets = $this->getTickets();
+        $request->validate([
+            'status' => 'in:OPEN,CLOSED',
+        ]);
+
+        $status = $request->has('status')
+            ? $request->input('status')
+            : $request->session()->get('status', 'OPEN');
+        $request->session()->put('status', $status);
+
+        $tickets = $this->sonarClient
+            ->tickets()
+            ->where('ticketable_id', [
+                session()->get('account')->id,
+                ...session()->get('child_accounts')->map(fn($account) => $account->id)->toArray()
+            ])
+            ->where('ticketable_type', 'Account')
+            ->where('status', $status === 'OPEN' ? '!=' : '=', $status === 'OPEN' ? 'CLOSED' : $status)
+            ->sortBy('updated_at', 'DESC')
+            ->paginate(5, $request->input('page', 1), '/'.$request->path());
 
         $ticketAccounts = $this->associateTicketsToAccounts($tickets);
 
         return view("pages.tickets.index", [
             'tickets' => $tickets,
             'ticketAccounts' => $ticketAccounts,
+            'status' => $status,
         ]);
     }
 
@@ -42,11 +60,16 @@ class TicketController extends Controller
      */
     public function show(int $id)
     {
-        $tickets = $this->getTickets();
+        try {
+            $ticket = $this->getTicket($id);
+        } catch (\Exception $e) {
+            return redirect()->action("TicketController@index")
+                ->withErrors(utrans("errors.invalidTicketID"));
+        }
 
-        $ticketAccounts = $this->associateTicketsToAccounts($tickets);
+        $ticketAccounts = $this->associateTicketsToAccounts([$ticket]);
 
-        if ($ticket = $tickets->filter(fn($t) => $t->id === $id)->first()) {
+        if ($ticket) {
             return view("pages.tickets.show", [
                 'ticket' => $ticket,
                 'account' => $ticketAccounts[$id],
@@ -88,16 +111,12 @@ class TicketController extends Controller
         try {
             $ticket = $createAccountTicketAction(AccountTicketData::fromRequest($request));
 
-            $ticketReply = $createTicketReplyAction(new TicketReplyData([
+            $createTicketReplyAction(new TicketReplyData([
                 'ticketId' => $ticket->id,
                 'body' => $request->input('description'),
                 'author' => get_user()->contact_name,
                 'authorEmail' => get_user()->email_address,
             ]));
-
-            \array_unshift($ticket->ticketReplies, $ticketReply);
-            $tickets = $this->getTickets()->prepend($ticket);
-            Cache::tags('tickets')->put(get_user()->account_id, $tickets, self::CACHE_TTL);
 
             return redirect()->action("TicketController@index")->with('success', utrans("tickets.ticketCreated"));
         } catch (\Exception $e) {
@@ -116,24 +135,21 @@ class TicketController extends Controller
         TicketReplyRequest $request,
         CreateTicketReplyAction $createTicketReplyAction
     ) {
-        $tickets = $this->getTickets();
-
-        if (!($ticket = $tickets->filter(fn($t) => $t->id === $ticketId)->first())) {
+        try {
+            // just verify this ticket belongs to them
+            $this->getTicket($ticketId);
+        } catch (\Exception $e) {
             return redirect()->action("TicketController@index")
                 ->withErrors(utrans("errors.invalidTicketID"));
         }
 
         try {
-            $ticketReply = $createTicketReplyAction(new TicketReplyData([
+            $createTicketReplyAction(new TicketReplyData([
                 'ticketId' => $ticketId,
                 'body' => $request->input('body'),
                 'author' => get_user()->contact_name,
                 'authorEmail' => get_user()->email_address,
             ]));
-
-            // prepend the ticket reply and update cache
-            \array_unshift($ticket->ticketReplies, $ticketReply);
-            Cache::tags('tickets')->put(get_user()->account_id, $tickets, self::CACHE_TTL);
 
             return redirect()->back()->with('success', utrans("tickets.replyPosted"));
         } catch (\Exception $e) {
@@ -141,27 +157,17 @@ class TicketController extends Controller
         }
     }
 
-    /**
-     * Get tickets for current user accounts, cache them if currently uncached, otherwise return from cache
-     * @return mixed
-     */
-    private function getTickets()
+    private function getTicket(int $id): ?Ticket
     {
-        return Cache::tags('tickets')->remember(get_user()->account_id, self::CACHE_TTL, function () {
-            try {
-                return $this->sonarClient
-                    ->tickets()
-                    ->where('ticketable_id', [
-                        session()->get('account')->id,
-                        ...session()->get('child_accounts')->map(fn($account) => $account->id)->toArray()
-                    ])
-                    ->where('ticketable_type', 'Account')
-                    ->sortBy('updated_at', 'DESC')
-                    ->get();
-            } catch (\Exception $e) {
-                return collect([]);
-            }
-        });
+        return $this->sonarClient
+            ->tickets()
+            ->where('id', $id)
+            ->where('ticketable_id', [
+                session()->get('account')->id,
+                ...session()->get('child_accounts')->map(fn($account) => $account->id)->toArray()
+            ])
+            ->where('ticketable_type', 'Account')
+            ->first();
     }
 
     /**

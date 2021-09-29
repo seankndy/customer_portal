@@ -24,9 +24,20 @@
       <div class="row align-items-center">
          <div class="col">
             <ul class="nav nav-tabs nav-overflow header-tabs">
+               <li class="nav-item @if ($status === 'CLOSED') mr-4 @endif">
+                  <a href="{{ url()->current() }}?status=OPEN" class="nav-link @if ($status === 'OPEN') active @endif">
+                     Open
+                     @if ($status === 'OPEN')
+                        <span class="badge badge-pill badge-soft-secondary">{{$tickets->total()}}</span>
+                     @endif
+                  </a>
+               </li>
                <li class="nav-item">
-                  <a href="#!" class="nav-link active">
-                  All <span class="badge badge-pill badge-soft-secondary">{{count($tickets)}}</span>
+                  <a href="{{ url()->current() }}?status=CLOSED" class="nav-link @if ($status === 'CLOSED') active @endif">
+                     Closed
+                     @if ($status === 'CLOSED')
+                     <span class="badge badge-pill badge-soft-secondary">{{$tickets->total()}}</span>
+                     @endif
                   </a>
                </li>
             </ul>
@@ -44,6 +55,7 @@
                      <th>{{utrans("tickets.subject")}}</th>
                      <th>{{utrans("tickets.status")}}</th>
                      <th class="d-none d-md-table-cell">{{utrans("general.date")}}</th>
+                     <th class="d-none d-sm-table-cell" width="20"></th>
                   </tr>
                </thead>
                <tbody>
@@ -82,6 +94,9 @@
                      <TD class="d-none d-md-table-cell">
                         {{ $ticket->updatedAt->diffForHumans() }}
                      </TD>
+                     <TD class="d-none d-sm-table-cell" width="20">
+                        <span class="badge badge-pill badge-soft-dark">{{count($ticket->ticketReplies)}}</span>
+                     </TD>
                   </tr>
                   @endforeach
                </tbody>
@@ -89,6 +104,13 @@
          </div>
       </div>
    </div>
+
+   <div class="col-12">
+      <div class="float-right">
+         {{ $tickets->links() }}
+      </div>
+   </div>
+
    <div class="col-12">
       <!-- Card -->
       <div class="card bg-light border ">

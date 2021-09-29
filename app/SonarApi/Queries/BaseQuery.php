@@ -6,6 +6,7 @@ use App\SonarApi\Client;
 use App\SonarApi\Exceptions\ResourceNotFoundException;
 use App\SonarApi\Resources\BaseResource;
 use GraphQL\QueryBuilder\QueryBuilder;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 
 abstract class BaseQuery implements Query
@@ -18,6 +19,12 @@ abstract class BaseQuery implements Query
         'integer_fields' => [],
         'string_fields' => [],
     ];
+
+    protected bool $paginate = false;
+
+    protected int $paginateCurrentPage;
+
+    protected int $paginatePerPage;
 
     protected Client $client;
 
@@ -55,6 +62,36 @@ abstract class BaseQuery implements Query
             ->map(fn($entity) => ($this->resource())::fromJsonObject($entity));
     }
 
+    /**
+     * @throws \App\SonarApi\Exceptions\SonarHttpException
+     * @throws ResourceNotFoundException
+     * @throws \App\SonarApi\Exceptions\SonarQueryException
+     */
+    public function first()
+    {
+        return $this->get()->first();
+    }
+
+    /**
+     * @throws \App\SonarApi\Exceptions\SonarHttpException
+     * @throws \App\SonarApi\Exceptions\SonarQueryException
+     */
+    public function paginate(int $perPage = 25, int $currentPage = 1, string $path = '/'): LengthAwarePaginator
+    {
+        $this->paginate = true;
+        $this->paginatePerPage = $perPage;
+        $this->paginateCurrentPage = $currentPage;
+
+        $response = $this->client->query($this);
+        $pageInfo = $response->{$this->objectName()}->page_info;
+        $entities = collect($response->{$this->objectName()}->entities)
+            ->map(fn($entity) => ($this->resource())::fromJsonObject($entity));
+
+        return new LengthAwarePaginator($entities, $pageInfo->total_count, $perPage, $currentPage, [
+            'path' => $path,
+        ]);
+    }
+
     public function sortBy(string $sortBy, string $sortOrder = 'ASC'): self
     {
         $this->sortBy = $sortBy;
@@ -70,20 +107,28 @@ abstract class BaseQuery implements Query
         return $this;
     }
 
-    public function where(string $field, $value): self
+    public function where(string $field, ...$args): self
     {
-        if (is_array($value)) {
-            $key = is_int($value[0]) ? 'integer_fields' : 'string_fields';
-
-            $this->where[$key][$field] = \array_merge(
-                $this->where[$key][$field] ?? [],
-                $value
-            );
-
-            return $this;
+        if (count($args) == 1) {
+            $operator = '=';
+            $value = $args[0];
+        } else if (count($args) == 2) {
+            $operator = $args[0];
+            $value = $args[1];
+        } else {
+            throw new \InvalidArgumentException("Minimum of 2 arguments, maximum of 3");
         }
 
-        $this->where[is_int($value) ? 'integer_fields' : 'string_fields'][$field][] = $value;
+        if (!is_array($value)) {
+            $value = [$value];
+        }
+
+        $fieldType = is_int($value[0]) ? 'integer_fields' : 'string_fields';
+
+        $this->where[$fieldType][$field] = \array_merge(
+            $this->where[$fieldType][$field] ?? [],
+            [$value, $operator]
+        );
 
         return $this;
     }
@@ -100,6 +145,18 @@ abstract class BaseQuery implements Query
         if ($this->sortBy) {
             $queryBuilder->setVariable('sorter', 'Sorter')
                 ->setArgument('sorter', ['$sorter']);
+        }
+        if ($this->paginate) {
+            $queryBuilder->setVariable('paginator', 'Paginator')
+                ->setArgument('paginator', '$paginator')
+                ->selectField(
+                    (new \GraphQL\Query('page_info'))
+                    ->setSelectionSet([
+                        'records_per_page',
+                        'page',
+                        'total_count',
+                    ])
+                );
         }
 
         return $queryBuilder->getQuery();
@@ -120,6 +177,13 @@ abstract class BaseQuery implements Query
             ];
         }
 
+        if ($this->paginate) {
+            $variables['paginator'] = [
+                'page' => $this->paginateCurrentPage,
+                'records_per_page' => $this->paginatePerPage,
+            ];
+        }
+
         return $variables;
     }
 
@@ -131,19 +195,24 @@ abstract class BaseQuery implements Query
         ];
 
         foreach ($this->where as $type => $fieldValues) {
-            foreach ($fieldValues as $field => $values) {
+            foreach ($fieldValues as $field => $valuesAndOperator) {
+                [$values, $operator] = $valuesAndOperator;
+
                 foreach ($values as $value) {
                     if ($type == 'integer_fields') {
                         $search = [
                             'attribute' => $field,
                             'search_value' => $value,
-                            'operator' => 'EQ',
+                            'operator' => [
+                                '=' => 'EQ',
+                                '!=' => 'NEQ',
+                            ][$operator]
                         ];
                     } else {
                         $search = [
                             'attribute' => $field,
                             'search_value' => $value,
-                            'match' => true,
+                            'match' => $operator == '=',
                         ];
                     }
 
