@@ -26,7 +26,7 @@
             <ul class="nav nav-tabs nav-overflow header-tabs">
                <li class="nav-item @if ($status === 'CLOSED') mr-4 @endif">
                   <a href="{{ url()->current() }}?status=OPEN" class="nav-link @if ($status === 'OPEN') active @endif">
-                     Open
+                     {{utrans('tickets.statusOpen')}}
                      @if ($status === 'OPEN')
                         <span class="badge badge-pill badge-soft-secondary">{{$tickets->total()}}</span>
                      @endif
@@ -34,7 +34,7 @@
                </li>
                <li class="nav-item">
                   <a href="{{ url()->current() }}?status=CLOSED" class="nav-link @if ($status === 'CLOSED') active @endif">
-                     Closed
+                     {{utrans('tickets.statusClosed')}}
                      @if ($status === 'CLOSED')
                      <span class="badge badge-pill badge-soft-secondary">{{$tickets->total()}}</span>
                      @endif

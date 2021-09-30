@@ -17,4 +17,6 @@ return [
     'waitingIspResponse' => 'En attente de la réponse de :companyName réponse',
     'closed' => 'Billet fermé',
     'replyPosted' => 'Réponse envoyée avec succès.',
+    'statusOpen' => 'Ouvert',
+    'statusClosed' => 'Fermé',
 ];

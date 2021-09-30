@@ -2,9 +2,7 @@
 
 namespace App\Http\Middleware;
 
-use App\Services\LanguageService;
 use Closure;
-use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\View;
 
 class Language
@@ -18,9 +16,8 @@ class Language
      */
     public function handle($request, Closure $next)
     {
-        $languageService = App::make(LanguageService::class);
-        $language = $languageService->getUserLanguage($request);
-        View::share('language',$language);
+        View::share('language', language($request));
+
         return $next($request);
     }
 }

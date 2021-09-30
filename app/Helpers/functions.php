@@ -1,10 +1,10 @@
 <?php
 
-use App\Services\LanguageService;
 use Carbon\Carbon;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Lang;
 
 /**
  * Get the authenticated user.
@@ -44,6 +44,18 @@ function getAvailableLanguages($language = "en")
     return $languages;
 }
 
+function language(\Illuminate\Http\Request $request = null): string
+{
+    if ($user = Auth::user()) {
+        $language = $user->language();
+    } else if ($request && $request->cookie('language')) {
+        $language = $request->cookie('language');
+    } else {
+        $language = Lang::getLocale();
+    }
+    return $language;
+}
+
 /**
  * Translate to the user language
  * @param string $string
@@ -53,9 +65,7 @@ function getAvailableLanguages($language = "en")
  */
 function utrans(string $string, array $variables = [], $request = null)
 {
-    $languageService = App::make(LanguageService::class);
-    $language = $languageService->getUserLanguage($request);
-    return trans($string, $variables, $language);
+    return trans($string, $variables, language($request));
 }
 
 /**

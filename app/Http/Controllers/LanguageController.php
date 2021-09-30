@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Actions\SetPortalUserLanguage;
 use App\Http\Requests\LanguageUpdateRequest;
+use Illuminate\Support\Facades\Auth;
 
 class LanguageController extends Controller
 {
@@ -11,8 +12,8 @@ class LanguageController extends Controller
         LanguageUpdateRequest $request,
         SetPortalUserLanguage $setPortalUserLanguage
     ): \Illuminate\Http\JsonResponse {
-        if (get_user()) {
-            $setPortalUserLanguage(get_user()->username, $request->language);
+        if (Auth::user()) {
+            $setPortalUserLanguage(Auth::user(), $request->language);
         }
 
         return response()->json([

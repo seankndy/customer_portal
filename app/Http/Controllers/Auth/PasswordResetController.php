@@ -2,19 +2,14 @@
 
 namespace App\Http\Controllers\Auth;
 
-use App\CreationToken;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\AccountCreationRequest;
-use App\Http\Requests\MakeRegistrationTokenRequest;
 use App\Http\Requests\PasswordUpdateRequest;
 use App\Http\Requests\SendPasswordResetRequest;
 use App\PasswordReset;
-use App\Services\LanguageService;
 use App\Traits\Throttles;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\View\View;
@@ -67,8 +62,7 @@ class PasswordResetController extends Controller
 
         $passwordReset->save();
 
-        $languageService = App::make(LanguageService::class);
-        $language = $languageService->getUserLanguage($request);
+        $language = language($request);
 
         try {
             Mail::send('emails.basic', [

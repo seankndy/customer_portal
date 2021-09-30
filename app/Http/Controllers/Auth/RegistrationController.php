@@ -6,12 +6,10 @@ use App\CreationToken;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\AccountCreationRequest;
 use App\Http\Requests\MakeRegistrationTokenRequest;
-use App\Services\LanguageService;
 use App\Traits\Throttles;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\View\View;
@@ -64,8 +62,8 @@ class RegistrationController extends Controller
 
         $creationToken->save();
 
-        $languageService = App::make(LanguageService::class);
-        $language = $languageService->getUserLanguage($request);
+        $language = language($request);
+
         try {
             Mail::send('emails.basic', [
                 'greeting' => trans("emails.greeting",[],$language),

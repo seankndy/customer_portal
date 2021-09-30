@@ -5,6 +5,7 @@ namespace App;
 use App\SonarApi\Resources\Contact;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Lang;
 
 /**
  * Represents a Sonar Customer Portal user which is actually a "Contact" in Sonar itself.
@@ -38,6 +39,19 @@ class User implements Authenticatable
         $user->accountId = $contact->contactableId;
 
         return $user;
+    }
+
+    public function language(): string
+    {
+        if ($usernameLanguage = UsernameLanguage::where('username', $this->username)->first()) {
+            return $usernameLanguage->language;
+        }
+
+        if (request()->cookie('language')) {
+            return request()->cookie('language');
+        }
+
+        return Lang::getLocale();
     }
 
     public function getAuthIdentifierName()
