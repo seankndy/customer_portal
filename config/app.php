@@ -178,7 +178,6 @@ return [
         Collective\Html\HtmlServiceProvider::class,
         Proengsoft\JsValidation\JsValidationServiceProvider::class,
         Mariuzzo\LaravelJsLocalization\LaravelJsLocalizationServiceProvider::class,
-        Fideloper\Proxy\TrustedProxyServiceProvider::class,
     ],
 
     /*
