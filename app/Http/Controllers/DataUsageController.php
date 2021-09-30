@@ -64,7 +64,7 @@ class DataUsageController extends Controller
         }
 
         try {
-            $this->frameworkDataUsageController->purchaseTopOff(get_user()->account_id, $request->input('quantity'));
+            $this->frameworkDataUsageController->purchaseTopOff(get_user()->accountId, $request->input('quantity'));
         } catch (Exception $e) {
             return redirect()->back()->withErrors(utrans("errors.failedToAddDataUsage"));
         }
@@ -79,11 +79,11 @@ class DataUsageController extends Controller
      */
     private function getPolicyDetails()
     {
-        if (!Cache::tags("usage_based_billing_policy_details")->has(get_user()->account_id)) {
-            $policyDetails = $this->frameworkDataUsageController->getUsageBasedBillingPolicyDetails(get_user()->account_id, 3);
-            Cache::tags("usage_based_billing_policy_details")->put(get_user()->account_id, $policyDetails, 10*60);
+        if (!Cache::tags("usage_based_billing_policy_details")->has(get_user()->accountId)) {
+            $policyDetails = $this->frameworkDataUsageController->getUsageBasedBillingPolicyDetails(get_user()->accountId, 3);
+            Cache::tags("usage_based_billing_policy_details")->put(get_user()->accountId, $policyDetails, 10*60);
         }
-        return Cache::tags("usage_based_billing_policy_details")->get(get_user()->account_id);
+        return Cache::tags("usage_based_billing_policy_details")->get(get_user()->accountId);
     }
 
     /**
@@ -92,11 +92,11 @@ class DataUsageController extends Controller
      */
     private function getHistoricalUsage()
     {
-        if (!Cache::tags("historical_data_usage")->has(get_user()->account_id)) {
-            $dataUsage = $this->formatHistoricalUsageData(array_slice($this->frameworkDataUsageController->getAggregatedDataUsage(get_user()->account_id, 3), 0, 12));
-            Cache::tags("historical_data_usage")->put(get_user()->account_id, $dataUsage, 60*60);
+        if (!Cache::tags("historical_data_usage")->has(get_user()->accountId)) {
+            $dataUsage = $this->formatHistoricalUsageData(array_slice($this->frameworkDataUsageController->getAggregatedDataUsage(get_user()->accountId, 3), 0, 12));
+            Cache::tags("historical_data_usage")->put(get_user()->accountId, $dataUsage, 60*60);
         }
-        return Cache::tags("historical_data_usage")->get(get_user()->account_id);
+        return Cache::tags("historical_data_usage")->get(get_user()->accountId);
     }
 
     /**
@@ -203,7 +203,7 @@ class DataUsageController extends Controller
     private function clearTopOffCache()
     {
         //Bust this cache so we see the new cap
-        Cache::tags("usage_based_billing_policy_details")->forget(get_user()->account_id);
+        Cache::tags("usage_based_billing_policy_details")->forget(get_user()->accountId);
         $billingController = new BillingController();
         $billingController->clearBillingCache();
     }

@@ -2,31 +2,21 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\SetPortalUserLanguage;
 use App\Http\Requests\LanguageUpdateRequest;
-use App\UsernameLanguage;
-use Carbon\Carbon;
-use Illuminate\Http\Request;
 
 class LanguageController extends Controller
 {
-    /**
-     * @param LanguageUpdateRequest $request
-     * @return $this
-     */
-    public function update(LanguageUpdateRequest $request)
-    {
-        $language = $request->input('language');
-        if (get_user())
-        {
-            $usernameLanguage = UsernameLanguage::firstOrNew([
-                'username' => get_user()->username
-            ]);
-            $usernameLanguage->language = $language;
-            $usernameLanguage->save();
+    public function update(
+        LanguageUpdateRequest $request,
+        SetPortalUserLanguage $setPortalUserLanguage
+    ): \Illuminate\Http\JsonResponse {
+        if (get_user()) {
+            $setPortalUserLanguage(get_user()->username, $request->language);
         }
 
         return response()->json([
             'success' => true,
-        ])->cookie('language',$language, 31536000);
+        ])->cookie('language', $request->language, 31536000);
     }
 }

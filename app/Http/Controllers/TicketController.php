@@ -86,7 +86,7 @@ class TicketController extends Controller
      */
     public function create()
     {
-        if (!get_user()->email_address) {
+        if (!get_user()->emailAddress) {
             return redirect()->action("ProfileController@show")
                 ->withErrors(utrans("errors.mustSetEmailAddress"));
         }
@@ -114,8 +114,8 @@ class TicketController extends Controller
             $createTicketReplyAction(new TicketReplyData([
                 'ticket' => $ticket,
                 'body' => $request->input('description'),
-                'author' => get_user()->contact_name,
-                'authorEmail' => get_user()->email_address,
+                'author' => get_user()->name,
+                'authorEmail' => get_user()->emailAddress,
             ]));
 
             return redirect()->action("TicketController@index")->with('success', utrans("tickets.ticketCreated"));
@@ -146,8 +146,8 @@ class TicketController extends Controller
             $createTicketReplyAction(new TicketReplyData([
                 'ticket' => $ticket,
                 'body' => $request->input('body'),
-                'author' => get_user()->contact_name,
-                'authorEmail' => get_user()->email_address,
+                'author' => get_user()->name,
+                'authorEmail' => get_user()->emailAddress,
             ]));
 
             return redirect()->back()->with('success', utrans("tickets.replyPosted"));

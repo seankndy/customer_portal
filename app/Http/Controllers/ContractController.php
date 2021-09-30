@@ -19,7 +19,7 @@ class ContractController extends Controller
         /**
          * This is not cached, as signing a contract outside the portal cannot be detected, and so would create invalid information display here.
          */
-        $contracts = $this->apiController->getContracts(get_user()->account_id, 1);
+        $contracts = $this->apiController->getContracts(get_user()->accountId, 1);
         return view("pages.contracts.index", compact('contracts'));
     }
 
@@ -29,7 +29,7 @@ class ContractController extends Controller
      */
     public function downloadContractPdf($id)
     {
-        $base64 = $this->apiController->getSignedContractAsBase64(get_user()->account_id, $id);
+        $base64 = $this->apiController->getSignedContractAsBase64(get_user()->accountId, $id);
 
         return response()->make(base64_decode($base64), 200, [
             'Content-Type' => 'application/pdf',

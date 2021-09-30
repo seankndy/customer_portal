@@ -14,10 +14,10 @@ trait ListsPaymentMethods
     private function getPaymentMethods()
     {
         $accountBillingController = new AccountBillingController();
-        if (!Cache::tags("billing.payment_methods")->has(get_user()->account_id)) {
-            $validAccountMethods = $accountBillingController->getValidPaymentMethods(get_user()->account_id);
-            Cache::tags("billing.payment_methods")->put(get_user()->account_id, $validAccountMethods, 10);
+        if (!Cache::tags("billing.payment_methods")->has(get_user()->accountId)) {
+            $validAccountMethods = $accountBillingController->getValidPaymentMethods(get_user()->accountId);
+            Cache::tags("billing.payment_methods")->put(get_user()->accountId, $validAccountMethods, 10);
         }
-        return Cache::tags("billing.payment_methods")->get(get_user()->account_id);
+        return Cache::tags("billing.payment_methods")->get(get_user()->accountId);
     }
 }

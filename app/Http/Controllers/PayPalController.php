@@ -73,7 +73,7 @@ class PayPalController extends Controller
             ->setDescription(utrans("billing.paymentToCompany", ['company_name' => config("customer_portal.company_name")]))
             ->setInvoiceNumber(uniqid(true)); //This is not a payment on a specific invoice, so we'll just generate a unique string, which is what PayPal requires
 
-        $tempToken = new PaypalTemporaryToken(['account_id' => get_user()->account_id, 'token' => uniqid(true)]);
+        $tempToken = new PaypalTemporaryToken(['account_id' => get_user()->accountId, 'token' => uniqid(true)]);
         $tempToken->save();
 
         $redirectUrls = new RedirectUrls();
@@ -99,7 +99,7 @@ class PayPalController extends Controller
      */
     public function completePayment(Request $request, $temporaryToken)
     {
-        $token = PaypalTemporaryToken::where('token', '=', $temporaryToken)->where('account_id', '=', get_user()->account_id)->first();
+        $token = PaypalTemporaryToken::where('token', '=', $temporaryToken)->where('account_id', '=', get_user()->accountId)->first();
         if ($token === null) {
             $error = utrans("errors.paypalTokenInvalid");
             return view("pages.paypal.error", compact('error'));
@@ -132,7 +132,7 @@ class PayPalController extends Controller
         try {
             $accountBillingController = new AccountBillingController();
             $transaction = $payment->getTransactions()[0];
-            $accountBillingController->storePayPalPayment(get_user()->account_id, $transaction->related_resources[0]->sale->amount->total, $transaction->related_resources[0]->sale->id);
+            $accountBillingController->storePayPalPayment(get_user()->accountId, $transaction->related_resources[0]->sale->amount->total, $transaction->related_resources[0]->sale->id);
         } catch (Exception $e) {
             $error = utrans("errors.failedToApplyPaypalPayment");
             return view("pages.paypal.error", compact('error'));
@@ -150,7 +150,7 @@ class PayPalController extends Controller
      */
     public function cancelPayment($temporaryToken)
     {
-        $token = PaypalTemporaryToken::where('token', '=', $temporaryToken)->where('account_id', '=', get_user()->account_id)->first();
+        $token = PaypalTemporaryToken::where('token', '=', $temporaryToken)->where('account_id', '=', get_user()->accountId)->first();
         if ($token !== null) {
             $token->delete();
         }

@@ -2,8 +2,10 @@
 
 namespace App\Providers;
 
+use App\Listeners\CacheAuthenticatedUser;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
+use Illuminate\Auth\Events\Login;
 
 class EventServiceProvider extends ServiceProvider
 {
@@ -16,6 +18,9 @@ class EventServiceProvider extends ServiceProvider
         'App\Events\SomeEvent' => [
             'App\Listeners\EventListener',
         ],
+        Login::class => [
+            CacheAuthenticatedUser::class,
+        ]
     ];
 
     /**

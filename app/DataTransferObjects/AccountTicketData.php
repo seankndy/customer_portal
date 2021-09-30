@@ -15,7 +15,7 @@ class AccountTicketData extends DataTransferObject
     {
         return new self([
             'subject' => $request->input('subject'),
-            'accountId' => (int)$request->input('account_id', get_user()->account_id),
+            'accountId' => (int)$request->input('account_id', get_user()->accountId),
         ]);
     }
 }

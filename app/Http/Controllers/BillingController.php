@@ -10,30 +10,21 @@ use App\Http\Requests\CreateTokenizedCreditCardRequest;
 use App\Http\Requests\CreditCardPaymentRequest;
 use App\Http\Requests\TokenizedCreditCardPaymentRequest;
 use App\Http\Requests\PaymentMethodDeleteRequest;
-use App\Services\LanguageService;
 use App\SystemSetting;
 use App\Traits\ListsPaymentMethods;
 use Carbon\Carbon;
 use Exception;
-use Illuminate\Http\Request;
-
-use App\Http\Requests;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Facades\Input;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redirect;
-use Illuminate\Support\Facades\Session;
 use Inacho\CreditCard as CreditCardValidator;
 use InvalidArgumentException;
 use SonarSoftware\CustomerPortalFramework\Controllers\AccountBillingController;
 use SonarSoftware\CustomerPortalFramework\Models\BankAccount;
 use SonarSoftware\CustomerPortalFramework\Models\CreditCard;
 use SonarSoftware\CustomerPortalFramework\Models\TokenizedCreditCard;
-use Stripe\Token;
 
 class BillingController extends Controller
 {
@@ -89,7 +80,7 @@ class BillingController extends Controller
     public function getInvoicePdf($invoiceID)
     {
         try {
-            $data = $this->accountBillingController->getInvoicePdf(get_user()->account_id, $invoiceID);
+            $data = $this->accountBillingController->getInvoicePdf(get_user()->accountId, $invoiceID);
         } catch (Exception $e) {
             Log::error($e->getMessage());
             return redirect()->back()->withErrors(utrans("errors.failedToDownloadInvoice"));
@@ -226,7 +217,7 @@ class BillingController extends Controller
         foreach ($paymentMethods as $paymentMethod) {
             if ((int)$paymentMethod->id === (int)$id) {
                 try {
-                    $this->accountBillingController->deletePaymentMethodByID(get_user()->account_id, $id);
+                    $this->accountBillingController->deletePaymentMethodByID(get_user()->accountId, $id);
                     $this->clearBillingCache();
                     return redirect()->action("BillingController@index")->with('success', utrans("billing.creditCardDeleted"));
                 } catch (Exception $e) {
@@ -250,7 +241,7 @@ class BillingController extends Controller
             if ((int)$paymentMethod->id === (int)$id) {
                 try {
                     $existingAutoSetting = (boolean)$paymentMethod->auto;
-                    $this->accountBillingController->setAutoOnPaymentMethod(get_user()->account_id, $paymentMethod->id, !$existingAutoSetting);
+                    $this->accountBillingController->setAutoOnPaymentMethod(get_user()->accountId, $paymentMethod->id, !$existingAutoSetting);
                     $this->clearBillingCache();
                     if ($existingAutoSetting == true) {
                         return redirect()->action("BillingController@index")->with('success', utrans("billing.autoPayDisabled"));
@@ -325,7 +316,7 @@ class BillingController extends Controller
 
         try {
             $this->accountBillingController->createTokenizedCreditCard(
-                get_user()->account_id,
+                get_user()->accountId,
                 $card,
                 (bool)$request->input('auto')
             );
@@ -356,7 +347,7 @@ class BillingController extends Controller
         }
 
         try {
-            $this->accountBillingController->createCreditCard(get_user()->account_id, $card, (bool)$request->input('auto'));
+            $this->accountBillingController->createCreditCard(get_user()->accountId, $card, (bool)$request->input('auto'));
         } catch (Exception $e) {
             return redirect()->back()->withErrors(utrans("errors.failedToCreateCard"))->withInput();
         }
@@ -395,7 +386,7 @@ class BillingController extends Controller
                 'zip' => $request->input('zip'),
                 'country' => $request->input('country'),
             ];
-            $this->accountBillingController->createBankAccount(get_user()->account_id, $bankAccount, (bool)$request->input('auto'), $address);
+            $this->accountBillingController->createBankAccount(get_user()->accountId, $bankAccount, (bool)$request->input('auto'), $address);
         } catch (Exception $e) {
             Log::error($e);
             return redirect()->back()->withErrors(utrans("errors.failedToCreateBankAccount"))->withInput();
@@ -418,7 +409,7 @@ class BillingController extends Controller
     {
 
         try {
-            $result = $this->accountBillingController->makePaymentUsingExistingPaymentMethod(get_user()->account_id, intval($request->input('payment_method')), trim($request->input('amount')));
+            $result = $this->accountBillingController->makePaymentUsingExistingPaymentMethod(get_user()->accountId, intval($request->input('payment_method')), trim($request->input('amount')));
         } catch (Exception $e) {
             Log::error($e->getMessage());
             throw new Exception(utrans("billing.paymentFailedTryAnother"));
@@ -448,7 +439,7 @@ class BillingController extends Controller
         $creditCard = $this->createCreditCardObjectFromRequest($request);
 
         try {
-            $result = $this->accountBillingController->makeCreditCardPayment(get_user()->account_id, $creditCard, $request->input('amount'), (boolean)$request->input('makeAuto'));
+            $result = $this->accountBillingController->makeCreditCardPayment(get_user()->accountId, $creditCard, $request->input('amount'), (boolean)$request->input('makeAuto'));
         } catch (Exception $e) {
             throw new InvalidArgumentException(utrans("billing.errorSubmittingPayment"));
         }
@@ -479,7 +470,7 @@ class BillingController extends Controller
 
         try {
             $result = $this->accountBillingController->makeTokenizedCreditCardPayment(
-                get_user()->account_id,
+                get_user()->accountId,
                 $creditCard,
                 $request->input('amount'),
                 (boolean)$request->input('makeAuto')
@@ -505,12 +496,12 @@ class BillingController extends Controller
      */
     private function getAccountBillingDetails()
     {
-        if (!Cache::tags("billing.details")->has(get_user()->account_id)) {
-            $billingDetails = $this->accountBillingController->getAccountBillingDetails(get_user()->account_id);
-            Cache::tags("billing.details")->put(get_user()->account_id, $billingDetails, 10*60);
+        if (!Cache::tags("billing.details")->has(get_user()->accountId)) {
+            $billingDetails = $this->accountBillingController->getAccountBillingDetails(get_user()->accountId);
+            Cache::tags("billing.details")->put(get_user()->accountId, $billingDetails, 10*60);
         }
 
-        return Cache::tags("billing.details")->get(get_user()->account_id);
+        return Cache::tags("billing.details")->get(get_user()->accountId);
     }
 
     /**
@@ -519,9 +510,9 @@ class BillingController extends Controller
      */
     private function getInvoices()
     {
-        if (!Cache::tags("billing.invoices")->has(get_user()->account_id)) {
+        if (!Cache::tags("billing.invoices")->has(get_user()->accountId)) {
             $invoicesToReturn = [];
-            $invoices = $this->accountBillingController->getInvoices(get_user()->account_id);
+            $invoices = $this->accountBillingController->getInvoices(get_user()->accountId);
             foreach ($invoices as $invoice) {
                 //This check is here because this property did not exist prior to Sonar 0.6.6
                 if (property_exists($invoice, "void")) {
@@ -532,10 +523,10 @@ class BillingController extends Controller
                     array_push($invoicesToReturn, $invoice);
                 }
             }
-            Cache::tags("billing.invoices")->put(get_user()->account_id, $invoicesToReturn, 10*60);
+            Cache::tags("billing.invoices")->put(get_user()->accountId, $invoicesToReturn, 10*60);
         }
 
-        return Cache::tags("billing.invoices")->get(get_user()->account_id);
+        return Cache::tags("billing.invoices")->get(get_user()->accountId);
     }
 
     /**
@@ -545,9 +536,9 @@ class BillingController extends Controller
     private function getTransactions()
     {
 
-        if (!Cache::tags("billing.transactions")->has(get_user()->account_id)) {
+        if (!Cache::tags("billing.transactions")->has(get_user()->accountId)) {
             $transactions = [];
-            $debits = $this->accountBillingController->getDebits(get_user()->account_id);
+            $debits = $this->accountBillingController->getDebits(get_user()->accountId);
             foreach ($debits as $debit) {
                 array_push($transactions, [
                     'type' => 'debit',
@@ -558,7 +549,7 @@ class BillingController extends Controller
                 ]);
             }
 
-            $discounts = $this->accountBillingController->getDiscounts(get_user()->account_id);
+            $discounts = $this->accountBillingController->getDiscounts(get_user()->accountId);
             foreach ($discounts as $discount) {
                 array_push($transactions, [
                     'type' => 'discount',
@@ -569,7 +560,7 @@ class BillingController extends Controller
                 ]);
             }
 
-            $payments = $this->accountBillingController->getPayments(get_user()->account_id);
+            $payments = $this->accountBillingController->getPayments(get_user()->accountId);
             foreach ($payments as $payment) {
                 if ($payment->success === true && $payment->reversed === false) {
                     array_push($transactions, [
@@ -591,10 +582,10 @@ class BillingController extends Controller
             });
             $transactions = array_slice($transactions, 0, 100);
 
-            Cache::tags("billing.transactions")->put(get_user()->account_id, $transactions, 10*60);
+            Cache::tags("billing.transactions")->put(get_user()->accountId, $transactions, 10*60);
         }
 
-        return Cache::tags("billing.transactions")->get(get_user()->account_id);
+        return Cache::tags("billing.transactions")->get(get_user()->accountId);
     }
 
     /**
@@ -657,10 +648,10 @@ class BillingController extends Controller
      */
     public function clearBillingCache()
     {
-        Cache::tags("billing.details")->forget(get_user()->account_id);
-        Cache::tags("billing.invoices")->forget(get_user()->account_id);
-        Cache::tags("billing.transactions")->forget(get_user()->account_id);
-        Cache::tags("billing.payment_methods")->forget(get_user()->account_id);
+        Cache::tags("billing.details")->forget(get_user()->accountId);
+        Cache::tags("billing.invoices")->forget(get_user()->accountId);
+        Cache::tags("billing.transactions")->forget(get_user()->accountId);
+        Cache::tags("billing.payment_methods")->forget(get_user()->accountId);
     }
 
     /**
@@ -750,11 +741,11 @@ class BillingController extends Controller
      */
     private function getPolicyDetails()
     {
-        if (!Cache::tags("usage_based_billing_policy_details")->has(get_user()->account_id)) {
-            $policyDetails = $this->frameworkDataUsageController->getUsageBasedBillingPolicyDetails(get_user()->account_id, 3);
-            Cache::tags("usage_based_billing_policy_details")->put(get_user()->account_id, $policyDetails, 10*60);
+        if (!Cache::tags("usage_based_billing_policy_details")->has(get_user()->accountId)) {
+            $policyDetails = $this->frameworkDataUsageController->getUsageBasedBillingPolicyDetails(get_user()->accountId, 3);
+            Cache::tags("usage_based_billing_policy_details")->put(get_user()->accountId, $policyDetails, 10*60);
         }
-        return Cache::tags("usage_based_billing_policy_details")->get(get_user()->account_id);
+        return Cache::tags("usage_based_billing_policy_details")->get(get_user()->accountId);
     }
 
     /**
@@ -763,11 +754,11 @@ class BillingController extends Controller
      */
     private function getHistoricalUsage()
     {
-        if (!Cache::tags("historical_data_usage")->has(get_user()->account_id)) {
-            $dataUsage = $this->formatHistoricalUsageData(array_slice($this->frameworkDataUsageController->getAggregatedDataUsage(get_user()->account_id, 3), 0, 12));
-            Cache::tags("historical_data_usage")->put(get_user()->account_id, $dataUsage, 60*60);
+        if (!Cache::tags("historical_data_usage")->has(get_user()->accountId)) {
+            $dataUsage = $this->formatHistoricalUsageData(array_slice($this->frameworkDataUsageController->getAggregatedDataUsage(get_user()->accountId, 3), 0, 12));
+            Cache::tags("historical_data_usage")->put(get_user()->accountId, $dataUsage, 60*60);
         }
-        return Cache::tags("historical_data_usage")->get(get_user()->account_id);
+        return Cache::tags("historical_data_usage")->get(get_user()->accountId);
     }
 
     /**

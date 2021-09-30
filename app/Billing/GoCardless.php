@@ -32,7 +32,7 @@ class GoCardless
         }
         $gocardlessToken = new GoCardlessToken([
             'token' => $token,
-            'account_id' => get_user()->account_id
+            'account_id' => get_user()->accountId
         ]);
 
         $params = [
@@ -74,9 +74,9 @@ class GoCardless
             $bankAccount = $this->client->customerBankAccounts()->get($fullMandate->links->customer_bank_account);
 
             $httpHelper = new HttpHelper();
-            $result = $httpHelper->post("accounts/" . get_user()->account_id . "/tokenized_payment_method", [
+            $result = $httpHelper->post("accounts/" . get_user()->accountId . "/tokenized_payment_method", [
                 'token' => $completedFlow->links->mandate,
-                'name_on_account' => get_user()->contact_name,
+                'name_on_account' => get_user()->name,
                 'type' => 'echeck',
                 'identifier' => $bankAccount->account_number_ending,
                 'auto' => true,

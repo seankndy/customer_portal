@@ -49,6 +49,7 @@ class Handler extends ExceptionHandler
         }
         return parent::render($request, $e);
     }
+
     /**
      * Convert an authentication exception into an unauthenticated response.
      *
@@ -61,7 +62,7 @@ class Handler extends ExceptionHandler
         if ($request->expectsJson()) {
             return response()->json(['error' => 'Unauthenticated.'], 401);
         } else {
-            return redirect()->guest('/');
+            return redirect($e->redirectTo())->withError(utrans("errors.notAuthenticated", [], $request));
         }
     }
 }

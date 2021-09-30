@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\SetPortalUserLanguage;
 use App\CreationToken;
 use App\Http\Requests\AccountCreationRequest;
 use App\Http\Requests\AuthenticationRequest;
@@ -13,16 +14,15 @@ use App\Services\LanguageService;
 use App\SonarApi\Client;
 use App\SystemSetting;
 use App\Traits\Throttles;
-use App\UsernameLanguage;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use SonarSoftware\CustomerPortalFramework\Controllers\AccountAuthenticationController;
 use SonarSoftware\CustomerPortalFramework\Controllers\ContactController;
-use SonarSoftware\CustomerPortalFramework\Exceptions\AuthenticationException;
 
 class AuthenticationController extends Controller
 {
@@ -58,34 +58,28 @@ class AuthenticationController extends Controller
      * @param AuthenticationRequest $request
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function authenticate(AuthenticationRequest $request)
-    {
+    public function authenticate(
+        AuthenticationRequest $request,
+        SetPortalUserLanguage $setPortalUserLanguage
+    ) {
         if ($this->getThrottleValue("login", $this->generateLoginThrottleHash($request)) > 10) {
             return redirect()->back()->withErrors(utrans("errors.tooManyFailedAuthenticationAttempts",[],$request));
         }
 
-        try {
-            $result = $this->accountAuthenticationController->authenticateUser($request->input('username'), $request->input('password'));
-            $request->session()->put('authenticated', true);
-            $request->session()->put('user', $result);
-            $request->session()->put('account', $this->sonarClient->accounts()->where('id', $result->account_id)->get()->first());
-            $request->session()->put('child_accounts', $this->sonarClient->accounts()->where('parent_account_id', $result->account_id)->get());
-        } catch (AuthenticationException $e) {
-            $this->incrementThrottleValue("login", $this->generateLoginThrottleHash($request));
-            $request->session()->forget('authenticated');
-            $request->session()->forget('user');
-            $request->session()->forget('account');
-            $request->session()->forget('child_accounts');
-            return redirect()->back()->withErrors(utrans("errors.couldNotFindAccount",[],$request));
+        if (Auth::attempt($request->only('username', 'password'))) {
+            $request->session()->put('account', $this->sonarClient->accounts()->where('id', Auth::user()->accountId)->get()->first());
+            $request->session()->put('child_accounts', $this->sonarClient->accounts()->where('parent_account_id', Auth::user()->accountId)->get());
+
+            $this->resetThrottleValue("login", $this->generateLoginThrottleHash($request));
+
+            $setPortalUserLanguage(Auth::user(), $request->input('language'));
+
+            return redirect()->action("BillingController@index");
         }
 
-        $this->resetThrottleValue("login", $this->generateLoginThrottleHash($request));
+        $this->incrementThrottleValue("login", $this->generateLoginThrottleHash($request));
 
-        $usernameLanguage = UsernameLanguage::firstOrNew(['username' => $request->input('username')]);
-        $usernameLanguage->language = $request->input('language');
-        $usernameLanguage->save();
-
-        return redirect()->action("BillingController@index");
+        return redirect()->back()->withErrors(utrans("errors.couldNotFindAccount",[],$request));
     }
 
     /**
@@ -350,8 +344,8 @@ class AuthenticationController extends Controller
      */
     public function logout(Request $request)
     {
-        $request->session()->forget('authenticated');
-        $request->session()->forget('user');
+        Auth::logout();
+        $request->session()->flush();
 
         return redirect()->action("AuthenticationController@index");
     }

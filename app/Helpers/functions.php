@@ -2,20 +2,16 @@
 
 use App\Services\LanguageService;
 use Carbon\Carbon;
+use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Facades\App;
-use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Auth;
 
 /**
- * Get the user object from the session
- * @return mixed|null
+ * Get the authenticated user.
  */
-function get_user()
+function get_user(): ?Authenticatable
 {
-    if (!Session::has("user")) {
-        return null;
-    }
-
-    return Session::get("user");
+    return Auth::user();
 }
 
 /**

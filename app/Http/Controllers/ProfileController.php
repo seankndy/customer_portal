@@ -118,7 +118,7 @@ class ProfileController extends Controller
      */
     private function clearProfileCache()
     {
-        Cache::tags("profile.details")->forget(get_user()->contact_id);
+        Cache::tags("profile.details")->forget(get_user()->id);
         return;
     }
 
@@ -129,11 +129,11 @@ class ProfileController extends Controller
      */
     private function getContact()
     {
-        if (!Cache::tags("profile.details")->has(get_user()->contact_id)) {
+        if (!Cache::tags("profile.details")->has(get_user()->id)) {
             $contactController = new ContactController();
-            $contact = $contactController->getContact(get_user()->contact_id, get_user()->account_id);
-            Cache::tags("profile.details")->put(get_user()->contact_id, $contact, 10*60);
+            $contact = $contactController->getContact(get_user()->id, get_user()->accountId);
+            Cache::tags("profile.details")->put(get_user()->id, $contact, 10*60);
         }
-        return Cache::tags("profile.details")->get(get_user()->contact_id);
+        return Cache::tags("profile.details")->get(get_user()->id);
     }
 }

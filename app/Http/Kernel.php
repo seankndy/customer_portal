@@ -2,10 +2,10 @@
 
 namespace App\Http;
 
+use App\Http\Middleware\Authenticate;
 use App\Http\Middleware\ContractMiddleware;
 use App\Http\Middleware\DataUsageMiddleware;
 use App\Http\Middleware\Language;
-use App\Http\Middleware\PortalAuth;
 use App\Http\Middleware\TicketMiddleware;
 use Illuminate\Foundation\Http\Kernel as HttpKernel;
 
@@ -59,7 +59,7 @@ class Kernel extends HttpKernel
      * @var array
      */
     protected $routeMiddleware = [
-        'auth' => PortalAuth::class,
+        'auth' => Authenticate::class,
         'auth.basic' => \Illuminate\Auth\Middleware\AuthenticateWithBasicAuth::class,
         'bindings' => \Illuminate\Routing\Middleware\SubstituteBindings::class,
         'can' => \Illuminate\Auth\Middleware\Authorize::class,

@@ -206,6 +206,7 @@ abstract class BaseQuery implements Query
                             'attribute' => $field,
                             'search_value' => $value,
                             'match' => $operator == '=',
+                            'partial_matching' => false,
                         ];
                     }
 
