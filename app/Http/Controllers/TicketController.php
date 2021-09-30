@@ -112,7 +112,7 @@ class TicketController extends Controller
             $ticket = $createAccountTicketAction(AccountTicketData::fromRequest($request));
 
             $createTicketReplyAction(new TicketReplyData([
-                'ticketId' => $ticket->id,
+                'ticket' => $ticket,
                 'body' => $request->input('description'),
                 'author' => get_user()->contact_name,
                 'authorEmail' => get_user()->email_address,
@@ -136,8 +136,7 @@ class TicketController extends Controller
         CreateTicketReplyAction $createTicketReplyAction
     ) {
         try {
-            // just verify this ticket belongs to them
-            $this->getTicket($ticketId);
+            $ticket = $this->getTicket($ticketId);
         } catch (\Exception $e) {
             return redirect()->action("TicketController@index")
                 ->withErrors(utrans("errors.invalidTicketID"));
@@ -145,7 +144,7 @@ class TicketController extends Controller
 
         try {
             $createTicketReplyAction(new TicketReplyData([
-                'ticketId' => $ticketId,
+                'ticket' => $ticket,
                 'body' => $request->input('body'),
                 'author' => get_user()->contact_name,
                 'authorEmail' => get_user()->email_address,

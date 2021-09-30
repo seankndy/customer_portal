@@ -18,7 +18,8 @@ class CreateAccountTicketAction
         $this->sonarClient = $sonarClient;
     }
     
-    public function __invoke(AccountTicketData $ticketData): Ticket {
+    public function __invoke(AccountTicketData $ticketData): Ticket
+    {
         return $this->sonarClient->mutations()->run(
             new CreatePublicTicket(
                 new CreatePublicTicketMutationInput([

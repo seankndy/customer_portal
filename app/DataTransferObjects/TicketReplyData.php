@@ -2,12 +2,13 @@
 
 namespace App\DataTransferObjects;
 
+use App\SonarApi\Resources\Ticket;
 use Illuminate\Http\Request;
 use Spatie\DataTransferObject\DataTransferObject;
 
 class TicketReplyData extends DataTransferObject
 {
-    public int $ticketId;
+    public Ticket $ticket;
 
     public string $body;
 

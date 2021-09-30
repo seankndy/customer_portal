@@ -22,7 +22,7 @@ class CreateTicketReplyAction
         return $this->sonarClient->mutations()->run(
             new CreateTicketReply(
                 new CreateTicketReplyMutationInput([
-                    'ticketId' => $ticketReplyData->ticketId,
+                    'ticketId' => $ticketReplyData->ticket->id,
                     'body' => $ticketReplyData->body,
                     'incoming' => true,
                     'author' => $ticketReplyData->author,
