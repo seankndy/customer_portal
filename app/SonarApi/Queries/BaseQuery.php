@@ -116,7 +116,27 @@ abstract class BaseQuery implements Query
             $value = [$value];
         }
 
-        $fieldType = is_int($value[0]) ? 'integer_fields' : 'string_fields';
+        switch (gettype($value[0])) {
+            case 'integer':
+                $fieldType = 'integer_fields';
+                break;
+            case 'boolean':
+                if ($operator != '=') {
+                    throw new \InvalidArgumentException("Boolean values only support an equality (=) comparison.");
+                }
+                $fieldType = 'boolean_fields';
+                break;
+            case 'NULL':
+                $fieldType = $operator == '=' ? 'unset_fields' : 'exists';
+                break;
+            default:
+                $fieldType = 'string_fields';
+                break;
+        }
+
+        if ($fieldType == 'boolean_fields' && $operator != '=') {
+            throw new \InvalidArgumentException("Boolean values only support an equality (=) comparison.");
+        }
 
         $this->where[$fieldType][$field] = \array_merge(
             $this->where[$fieldType][$field] ?? [],
@@ -183,8 +203,11 @@ abstract class BaseQuery implements Query
     protected function buildSearchFromWhere(): array
     {
         $data = [
-            'string_fields' => [],
             'integer_fields' => [],
+            'boolean_fields' => [],
+            'string_fields' => [],
+            'unset_fields' => [],
+            'exists' => [],
         ];
 
         foreach ($this->where as $type => $fieldValues) {
@@ -193,7 +216,7 @@ abstract class BaseQuery implements Query
 
                 foreach ($values as $value) {
                     if ($type == 'integer_fields') {
-                        $search = [
+                        $data[$type][] = [
                             'attribute' => $field,
                             'search_value' => $value,
                             'operator' => [
@@ -201,19 +224,26 @@ abstract class BaseQuery implements Query
                                 '!=' => 'NEQ',
                             ][$operator]
                         ];
-                    } else {
-                        $search = [
+                    } else if ($type == 'boolean_fields') {
+                        $data[$type][] = [
+                            'attribute' => $field,
+                            'search_value' => $value,
+                        ];
+                    } else if ($type == 'string_fields') {
+                        $data[$type][] = [
                             'attribute' => $field,
                             'search_value' => $value,
                             'match' => $operator == '=',
                             'partial_matching' => false,
                         ];
+                    } else if ($type == 'unset_fields' || $type == 'exists') {
+                        $data[$type][] = $field;
                     }
-
-                    $data[$type][] = $search;
                 }
             }
         }
+
+        print_r($data);
 
         return $data;
     }
