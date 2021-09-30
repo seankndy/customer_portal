@@ -11,7 +11,7 @@
         "php": ">=7.4",
         "ext-json": "*",
         "ext-bcmath": "*",
-        "laravel/framework": "5.8.*",
+        "laravel/framework": "^6.0",
         "predis/predis": "^1.0",
         "mariuzzo/laravel-js-localization": "dev-master",
         "laravel/tinker": "^1.0",
@@ -19,9 +19,9 @@
         "doctrine/dbal": "^2.10",
         "stripe/stripe-php": "^7",
         "gocardless/gocardless-pro": "^1.5",
-        "laravelcollective/html": "^5.5",
+        "laravelcollective/html": "^6.0",
         "paypal/rest-api-sdk-php": "^1.7",
-        "proengsoft/laravel-jsvalidation": "^1.6.0-dev",
+        "proengsoft/laravel-jsvalidation": "^4.5",
         "inacho/php-credit-card-validator": "^1.0",
         "sonarsoftwareinc/customer_portal_framework": "dev-master",
         "spatie/laravel-csp": "^2.6",
@@ -29,10 +29,6 @@
         "spatie/data-transfer-object": "^2.8"
     },
     "repositories": [
-        {
-            "type": "vcs",
-            "url": "https://github.com/reganjohnson/laravel-jsvalidation"
-        },
         {
             "type": "vcs",
             "url": "https://github.com/seankndy/customer_portal_framework"
