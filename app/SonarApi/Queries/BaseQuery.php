@@ -243,8 +243,6 @@ abstract class BaseQuery implements Query
             }
         }
 
-        print_r($data);
-
         return $data;
     }
 }
