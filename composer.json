@@ -11,7 +11,7 @@
         "php": ">=7.4",
         "ext-json": "*",
         "ext-bcmath": "*",
-        "laravel/framework": "5.7.*",
+        "laravel/framework": "5.8.*",
         "predis/predis": "^1.0",
         "mariuzzo/laravel-js-localization": "dev-master",
         "laravel/tinker": "^1.0",
@@ -23,8 +23,8 @@
         "paypal/rest-api-sdk-php": "^1.7",
         "proengsoft/laravel-jsvalidation": "^1.6.0-dev",
         "inacho/php-credit-card-validator": "^1.0",
-        "sonarsoftwareinc/customer_portal_framework": "^1.0.23",
-        "spatie/laravel-csp": "^2.1.2",
+        "sonarsoftwareinc/customer_portal_framework": "dev-master",
+        "spatie/laravel-csp": "^2.6",
         "gmostafa/php-graphql-client": "^1.13",
         "spatie/data-transfer-object": "^2.8"
     },
@@ -35,7 +35,7 @@
         },
         {
             "type": "vcs",
-            "url": "https://github.com/sonarsoftwareinc/customer_portal_framework"
+            "url": "https://github.com/seankndy/customer_portal_framework"
         }
     ],
     "require-dev": {

@@ -507,7 +507,7 @@ class BillingController extends Controller
     {
         if (!Cache::tags("billing.details")->has(get_user()->account_id)) {
             $billingDetails = $this->accountBillingController->getAccountBillingDetails(get_user()->account_id);
-            Cache::tags("billing.details")->put(get_user()->account_id, $billingDetails, 10);
+            Cache::tags("billing.details")->put(get_user()->account_id, $billingDetails, 10*60);
         }
 
         return Cache::tags("billing.details")->get(get_user()->account_id);
@@ -532,7 +532,7 @@ class BillingController extends Controller
                     array_push($invoicesToReturn, $invoice);
                 }
             }
-            Cache::tags("billing.invoices")->put(get_user()->account_id, $invoicesToReturn, 10);
+            Cache::tags("billing.invoices")->put(get_user()->account_id, $invoicesToReturn, 10*60);
         }
 
         return Cache::tags("billing.invoices")->get(get_user()->account_id);
@@ -591,7 +591,7 @@ class BillingController extends Controller
             });
             $transactions = array_slice($transactions, 0, 100);
 
-            Cache::tags("billing.transactions")->put(get_user()->account_id, $transactions, 10);
+            Cache::tags("billing.transactions")->put(get_user()->account_id, $transactions, 10*60);
         }
 
         return Cache::tags("billing.transactions")->get(get_user()->account_id);
@@ -752,7 +752,7 @@ class BillingController extends Controller
     {
         if (!Cache::tags("usage_based_billing_policy_details")->has(get_user()->account_id)) {
             $policyDetails = $this->frameworkDataUsageController->getUsageBasedBillingPolicyDetails(get_user()->account_id, 3);
-            Cache::tags("usage_based_billing_policy_details")->put(get_user()->account_id, $policyDetails, 10);
+            Cache::tags("usage_based_billing_policy_details")->put(get_user()->account_id, $policyDetails, 10*60);
         }
         return Cache::tags("usage_based_billing_policy_details")->get(get_user()->account_id);
     }
@@ -765,7 +765,7 @@ class BillingController extends Controller
     {
         if (!Cache::tags("historical_data_usage")->has(get_user()->account_id)) {
             $dataUsage = $this->formatHistoricalUsageData(array_slice($this->frameworkDataUsageController->getAggregatedDataUsage(get_user()->account_id, 3), 0, 12));
-            Cache::tags("historical_data_usage")->put(get_user()->account_id, $dataUsage, 60);
+            Cache::tags("historical_data_usage")->put(get_user()->account_id, $dataUsage, 60*60);
         }
         return Cache::tags("historical_data_usage")->get(get_user()->account_id);
     }

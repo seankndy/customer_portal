@@ -81,7 +81,7 @@ class DataUsageController extends Controller
     {
         if (!Cache::tags("usage_based_billing_policy_details")->has(get_user()->account_id)) {
             $policyDetails = $this->frameworkDataUsageController->getUsageBasedBillingPolicyDetails(get_user()->account_id, 3);
-            Cache::tags("usage_based_billing_policy_details")->put(get_user()->account_id, $policyDetails, 10);
+            Cache::tags("usage_based_billing_policy_details")->put(get_user()->account_id, $policyDetails, 10*60);
         }
         return Cache::tags("usage_based_billing_policy_details")->get(get_user()->account_id);
     }
@@ -94,7 +94,7 @@ class DataUsageController extends Controller
     {
         if (!Cache::tags("historical_data_usage")->has(get_user()->account_id)) {
             $dataUsage = $this->formatHistoricalUsageData(array_slice($this->frameworkDataUsageController->getAggregatedDataUsage(get_user()->account_id, 3), 0, 12));
-            Cache::tags("historical_data_usage")->put(get_user()->account_id, $dataUsage, 60);
+            Cache::tags("historical_data_usage")->put(get_user()->account_id, $dataUsage, 60*60);
         }
         return Cache::tags("historical_data_usage")->get(get_user()->account_id);
     }

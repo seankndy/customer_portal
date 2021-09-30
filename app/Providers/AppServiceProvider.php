@@ -81,7 +81,7 @@ class AppServiceProvider extends ServiceProvider
             return new \App\SonarApi\Client(
                 app(\GuzzleHttp\ClientInterface::class),
                 config('sonar.api_key'),
-                config('sonar.instance_name'),
+                config('sonar.url'),
             );
         });
     }

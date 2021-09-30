@@ -14,22 +14,20 @@ use GuzzleHttp\ClientInterface as GuzzleClientInterface;
 
 class Client
 {
-    private const API_URL = 'https://%s.sonar.software/api/graphql'; // %s replaced with instance name
-
     private GuzzleClientInterface $httpClient;
 
     private string $apiKey;
 
-    private string $instanceName;
+    private string $url;
 
     public function __construct(
         GuzzleClientInterface $httpClient,
         string $apiKey,
-        string $instanceName
+        string $url
     ) {
         $this->httpClient = $httpClient;
         $this->apiKey = $apiKey;
-        $this->instanceName = $instanceName;
+        $this->url = $url;
     }
 
     public function accounts(): AccountsQuery
@@ -80,7 +78,7 @@ class Client
         try {
             $response = $this->httpClient->request(
                 'POST',
-                sprintf(self::API_URL, $this->instanceName),
+                sprintf('%s/api/graphql', $this->url),
                 [
                     'http_errors' => true,
                     'headers' => [

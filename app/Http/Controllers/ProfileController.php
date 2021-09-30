@@ -132,7 +132,7 @@ class ProfileController extends Controller
         if (!Cache::tags("profile.details")->has(get_user()->contact_id)) {
             $contactController = new ContactController();
             $contact = $contactController->getContact(get_user()->contact_id, get_user()->account_id);
-            Cache::tags("profile.details")->put(get_user()->contact_id, $contact, 10);
+            Cache::tags("profile.details")->put(get_user()->contact_id, $contact, 10*60);
         }
         return Cache::tags("profile.details")->get(get_user()->contact_id);
     }

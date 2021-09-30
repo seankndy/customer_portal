@@ -51,6 +51,7 @@ APP_KEY="base64:$(head -c32 /dev/urandom | base64)";
 read -ep "Enter your portal domain name (such as portal.example.com): " -i "${NGINX_HOST:-}" NGINX_HOST
 read -ep "Enter Your API Username: " -i "${API_USERNAME:-}" API_USERNAME
 read -esp "Enter Your API Password (output will not be displayed): " API_PASSWORD
+read -esp "Enter Your GraphQL API Token (output will not be displayed): " API_TOKEN
 echo
 read -ep "Enter Your Instance URL (e.g. https://example.sonar.software): " -i "${SONAR_URL:-}" SONAR_URL
 read -ep "Enter your email address: "  -i "${EMAIL_ADDRESS:-}" EMAIL_ADDRESS
@@ -58,8 +59,9 @@ read -ep "Enter your email address: "  -i "${EMAIL_ADDRESS:-}" EMAIL_ADDRESS
 cat <<- EOF > ".env"
         APP_KEY=$APP_KEY
         NGINX_HOST=$NGINX_HOST
-        API_USERNAME=$API_USERNAME
-        API_PASSWORD=$API_PASSWORD
+        API_USERNAME="$API_USERNAME"
+        API_PASSWORD="$API_PASSWORD"
+        SONAR_API_KEY="$API_TOKEN"
         SONAR_URL=$SONAR_URL
         EMAIL_ADDRESS=$EMAIL_ADDRESS
 EOF
