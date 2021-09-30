@@ -67,7 +67,7 @@ class BillingController extends Controller
             'currentUsage' => $currentUsage
         ];
 
-        $systemSetting = SystemSetting::firstOrNew(['id' => 1]);
+        $systemSetting = SystemSetting::instance();
 
         return view("pages.billing.index", compact('values', 'invoices', 'transactions', 'paymentMethods', 'systemSetting'));
     }
@@ -109,7 +109,7 @@ class BillingController extends Controller
         {
             $stripe = new PortalStripe();
             $secret = $stripe->setupIntent();
-            $systemSettings = SystemSetting::first();
+            $systemSettings = SystemSetting::instance();
             $key = $systemSettings->stripe_public_api_key;
             return view(
                 'pages.billing.make_payment_stripe',
@@ -269,7 +269,7 @@ class BillingController extends Controller
                 if (config("customer_portal.stripe_enabled") == 1)
                 {
                     $stripe = new PortalStripe();
-                    $systemSettings = SystemSetting::first();
+                    $systemSettings = SystemSetting::instance();
                     return view("pages.billing.add_card_stripe", [
                         'secret' => $stripe->setupIntent(),
                         'key' => $systemSettings->stripe_public_api_key

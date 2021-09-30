@@ -38,7 +38,7 @@ class ProfileController extends Controller
                 $phoneNumbers[$phoneNumber->getType()] = $phoneNumber->getNumber();
             }
         }
-        $country = SystemSetting::first()->country;
+        $country = SystemSetting::instance()->country;
 
         return view("pages.profile.show", compact('user', 'contact', 'phoneNumbers', 'country'));
     }

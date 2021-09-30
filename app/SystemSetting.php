@@ -43,4 +43,9 @@ class SystemSetting extends Model
         'contracts_enabled' => 'boolean',
         'stripe_enabled' => 'boolean',
     ];
+
+    public static function instance()
+    {
+        return self::firstOrNew(['id' => 1]);
+    }
 }

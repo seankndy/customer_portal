@@ -14,6 +14,9 @@
 /**
  * Admin routes
  */
+
+use Illuminate\Support\Facades\Route;
+
 Route::get("/settings", "AppConfigController@show");
 Route::get("/settings/subdivisions/{country}", "SubdivisionController@authenticate");
 Route::post("/settings", "AppConfigController@save");
@@ -22,16 +25,16 @@ Route::post("/settings/auth", "AppConfigController@authenticate");
 Route::group(['middleware' => ['language']], function () {
     Route::group(['middleware' => ['web','guest']], function () {
         //Unauthenticated routes
-        Route::get('/', 'AuthenticationController@index');
-        Route::post('/', 'AuthenticationController@authenticate');
-        Route::get('/register', 'AuthenticationController@showRegistrationForm');
-        Route::post('/register', 'AuthenticationController@lookupEmail');
-        Route::get('/create/{token}', 'AuthenticationController@showCreationForm');
-        Route::post('/create/{token}', 'AuthenticationController@createAccount');
-        Route::get('/reset', 'AuthenticationController@showResetPasswordForm');
-        Route::post('/reset', 'AuthenticationController@sendResetEmail');
-        Route::get('/reset/{token}', 'AuthenticationController@showNewPasswordForm');
-        Route::post('/reset/{token}', 'AuthenticationController@updateContactWithNewPassword');
+        Route::get('/', 'Auth\LoginController@show')->name('login');
+        Route::post('/', 'Auth\LoginController@authenticate')->name('authenticate');
+        Route::get('/register', 'Auth\RegistrationController@show')->name('register');
+        Route::post('/register/make-token', 'Auth\RegistrationController@makeRegistrationToken')->name('make-registration-token');
+        Route::get('/register/create/{token}', 'Auth\RegistrationController@create')->name('register.create');
+        Route::post('/register/create/{token}', 'Auth\RegistrationController@store')->name('register.store');
+        Route::get('/reset', 'Auth\PasswordResetController@show')->name('reset-password.show');
+        Route::post('/reset', 'Auth\PasswordResetController@sendResetEmail')->name('reset-password.send');
+        Route::get('/reset/{token}', 'Auth\PasswordResetController@showNewPasswordForm')->name('reset-password.new');
+        Route::post('/reset/{token}', 'Auth\PasswordResetController@resetPassword')->name('reset-password.reset');
     });
 
     /**
@@ -108,6 +111,6 @@ Route::group(['middleware' => ['language']], function () {
         });
     });
 
-    Route::get('/logout', 'AuthenticationController@logout');
+    Route::get('/logout', 'Auth\LoginController@logout');
     Route::post("/language","LanguageController@update");
 });

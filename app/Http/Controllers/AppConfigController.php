@@ -19,7 +19,7 @@ class AppConfigController extends Controller
 
     public function authenticate(SettingsAuthRequest $request)
     {
-        $systemSetting = SystemSetting::first();
+        $systemSetting = SystemSetting::instance();
         if (!$systemSetting) {
             return redirect()->back()->withErrors(trans('errors.noKeyFound'));
         }
@@ -53,9 +53,7 @@ class AppConfigController extends Controller
                 $ticketGroups[$ticketGroupDatum->id] = $ticketGroupDatum->name;
             }
 
-            $systemSetting = SystemSetting::firstOrNew([
-                'id' => 1
-            ]);
+            $systemSetting = SystemSetting::instance();
 
             $paypalCurrency = $this->paypalCurrency();
 
@@ -74,9 +72,7 @@ class AppConfigController extends Controller
     public function save(AppConfigRequest $request)
     {
         if ($request->session()->get('settings_authenticated') === 1) {
-            $systemSetting = SystemSetting::firstOrNew([
-                'id' => 1
-            ]);
+            $systemSetting = SystemSetting::instance();
 
             /**
              * Image Upload

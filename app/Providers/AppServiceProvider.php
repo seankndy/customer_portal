@@ -16,9 +16,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot()
     {
         try {
-            $systemSetting = SystemSetting::firstOrNew([
-                'id' => 1
-            ]);
+            $systemSetting = SystemSetting::instance();
 
             config([
                 'app.name' => $systemSetting->isp_name,
