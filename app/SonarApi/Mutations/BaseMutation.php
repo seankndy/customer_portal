@@ -10,14 +10,22 @@ abstract class BaseMutation implements MutationInterface
 {
     public function query(): \GraphQL\Mutation
     {
+        $properties = (new \ReflectionClass($this))
+            ->getProperties(\ReflectionProperty::IS_PUBLIC);
+
         $variables = $arguments = [];
-        foreach (\get_object_vars($this) as $var => $value) {
+        foreach ($properties as $property) {
+            $var = $property->getName();
+            $value = $this->$var;
+            $required = ! $property->getType()->allowsNull();
+
             if ($value instanceof Input) {
-                $variables[] = new Variable($var, $value->typeName());
+                $variables[] = new Variable($var, $value->typeName(), $required);
             } else {
                 $variables[] = new Variable(
                     $var,
-                    is_int($value) ? 'Int' : 'String'
+                    is_int($value) ? 'Int64Bit' : 'String',
+                    $required
                 );
             }
             $arguments[$var] = '$'.$var;

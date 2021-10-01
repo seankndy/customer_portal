@@ -4,32 +4,61 @@ namespace App\SonarApi\Mutations\Inputs;
 
 use Illuminate\Support\Str;
 
+/**
+ * Child classes must define their properties as protected or private so that BaseInput can control setting the values
+ * and determine which properties to send in the mutation.
+ *
+ */
+
 abstract class BaseInput implements Input
 {
+    protected array $declared = [];
+
     public function __construct(array $data)
     {
-        foreach ($data as $key => $value) {
-            if (!property_exists($this, $key)) {
-                throw new \InvalidArgumentException("Property '$key' does not exist on mutation input class " .
-                    get_class($this));
-            }
-            $this->$key = $value;
+        if ((new \ReflectionClass($this))->getProperties(\ReflectionProperty::IS_PUBLIC)) {
+            throw new \Exception(get_class($this) . " has public properties defined and this is not allowed.");
         }
+
+        foreach ($data as $key => $value) {
+            $this->setProperty($key, $value);
+        }
+    }
+
+    public function __set($var, $value): void
+    {
+        $this->setProperty($var, $value);
+    }
+
+    public function setProperty($var, $value): self
+    {
+        if (!property_exists($this, $var)) {
+            throw new \InvalidArgumentException("Property '$var' does not exist on mutation input class " .
+                get_class($this));
+        }
+
+        $this->$var = $value;
+
+        if (!in_array($var, $this->declared)) {
+            $this->declared[] = $var;
+        }
+
+        return $this;
     }
 
     /**
      * Returns the base class name by default, may be overidden.
      */
-    public function typeName(): string
+    public static function typeName(): string
     {
-        return \substr(static::class, \strrpos(static::class, '\\')+1);
+        return (new \ReflectionClass(static::class))->getShortName();
     }
 
     public function toArray(): array
     {
         $vars = [];
-        foreach (\get_object_vars($this) as $var => $value) {
-            $vars[Str::snake($var)] = $value;
+        foreach ($this->declared as $var) {
+            $vars[Str::snake($var)] = $this->$var;
         }
         return $vars;
     }

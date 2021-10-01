@@ -86,11 +86,13 @@ Route::group(['middleware' => ['localization']], function () {
          * Ticketing routes
          */
         Route::group(['prefix' => 'tickets', 'middleware' => ['tickets']], function () {
-            Route::get("/", "TicketController@index");
+            Route::get("/", "TicketController@index")->name('tickets.index');
             Route::get("/create", "TicketController@create");
             Route::post("/", "TicketController@store");
-            Route::get("/{tickets}", "TicketController@show");
-            Route::post("/{tickets}/reply", "TicketController@postReply");
+            Route::get("/{id}", "TicketController@show");
+            Route::post("/{ticketId}/reply", "TicketController@postReply")->name('ticket.post-reply');
+            Route::post("/{ticketId}/close", "TicketController@close")->name('ticket.close');
+            Route::post("/{ticketId}/reopen", "TicketController@reopen")->name('ticket.reopen');
         });
 
         /**

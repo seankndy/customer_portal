@@ -4,13 +4,13 @@ namespace App\SonarApi\Mutations\Inputs;
 
 class CreateTicketReplyMutationInput extends BaseInput
 {
-    public int $ticketId;
+    protected int $ticketId;
 
-    public ?string $body;
+    protected ?string $body;
 
-    public bool $incoming;
+    protected bool $incoming;
 
-    public string $author;
+    protected string $author;
 
-    public string $authorEmail;
+    protected string $authorEmail;
 }

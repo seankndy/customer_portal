@@ -7,6 +7,7 @@ return [
     'descriptionLong' => 'Veuillez décrire le problème le plus clairement possible.',
     'noTickets' => 'Il n’y a actuellement aucun billet à visionner.',
     'ticketCreated' => 'Billet créé avec succès.',
+    'ticketUpdated' => 'Le ticket a été mis à jour avec succès.',
     'noRepliesYet' => 'Nous n’avons pas encore répondu à ce billet. Veuillez revenir plus tard.',
     'youWrote' => 'Vous avez écrit:',
     'ispWrote' => ':companyName écrit:',
@@ -19,4 +20,6 @@ return [
     'replyPosted' => 'Réponse envoyée avec succès.',
     'statusOpen' => 'Ouvert',
     'statusClosed' => 'Fermé',
+    'closeTicket' => 'Fermer le ticket',
+    'reopenTicket' => 'Rouvrir le ticket',
 ];

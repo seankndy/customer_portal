@@ -6,5 +6,5 @@ interface Input
 {
     public function toArray(): array;
 
-    public function typeName(): string;
+    public static function typeName(): string;
 }

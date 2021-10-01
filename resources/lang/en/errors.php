@@ -29,6 +29,7 @@ return [
     'failedToResetPassword' => 'Your password is too simple. Please try a longer and more complex password.',
     'tokenMismatch' => 'Looks like you may have been idle too long. Please try again.',
     'failedToPostReply' => 'Failed to post reply. Please try again later.',
+    'failedToUpdateTicket' => 'Failed to update ticket.  Please try again later.',
     'paymentMethodNotFound' => 'That payment method could not be found. Perhaps it was already deleted.',
     'failedToCreateCard' => 'Failed to add card. Please check the number and expiration date and try again.',
     'paypalFailed' => 'Failed to make payment via PayPal. Please try another method.',

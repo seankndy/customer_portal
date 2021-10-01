@@ -29,6 +29,7 @@ return [
     'failedToResetPassword' => 'La réinitialisation du mot de passe a échoué. Veuillez réessayer plus tard.',
     'tokenMismatch' => 'Période d’inactivité trop longue. Veuillez réessayer.',
     'failedToPostReply' => 'Impossible d’afficher la réponse. Veuillez réessayer plus tard.',
+    'failedToUpdateTicket' => 'Échec de la mise à jour du ticket.  Veuillez réessayer plus tard.',
     'paymentMethodNotFound' => 'Cette méthode de paiement est introuvable. Elle a peut-être déjà été supprimée.',
     'failedToCreateCard' => 'Impossible d’ajouter la carte. Veuillez vérifier le numéro et la date d’expiration puis réessayez.',
     'paypalFailed' => 'Impossible d’effectuer le paiement à l’aide de PayPal. Veuillez essayer une autre méthode.',

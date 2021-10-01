@@ -23,6 +23,11 @@ class Account extends BaseResource
      */
     public array $addresses;
 
+    /**
+     * @var \App\SonarApi\Resources\RadiusAccount[]
+     */
+    public array $radiusAccounts;
+
     protected array $with = ['accountStatus', 'company'];
 
     public function physicalAddress(): ?Address

@@ -59,8 +59,8 @@ abstract class BaseResource
                     $data[$field] = $jsonObject->$jsonVar ? Carbon::createFromTimeString($jsonObject->$jsonVar) : null;
                 } else if (is_a($type->type(), \DateTime::class, true)) {
                     $data[$field] = $jsonObject->$jsonVar ? new \DateTime($jsonObject->$jsonVar) : null;
-                } else if (is_subclass_of($type->type(), BaseResource::class)) {
-                    $data[$field] = $jsonObject->$jsonVar ? ($type->type())::fromJsonObject($jsonObject->$jsonVar) : null;
+                } else if (is_subclass_of($type->type(), BaseResource::class) && $jsonObject->$jsonVar) {
+                    $data[$field] = ($type->type())::fromJsonObject($jsonObject->$jsonVar);
                 } else {
                     $data[$field] = $jsonObject->$jsonVar;
                 }

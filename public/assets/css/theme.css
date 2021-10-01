@@ -11488,6 +11488,10 @@ button:focus {
 	text-transform: uppercase;
 	color: #95aac9;
 }
+.header-pretitle a:hover {
+	text-decoration: none;
+	color: inherit;
+}
 .header-title {
 	margin-bottom: 0;
 }

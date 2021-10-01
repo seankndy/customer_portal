@@ -7,6 +7,7 @@ return [
     'descriptionLong' => 'Please describe the problem in as much detail as possible.',
     'noTickets' => 'There are currently no tickets available for viewing.',
     'ticketCreated' => 'Ticket successfully created.',
+    'ticketUpdated' => 'Ticket successfully updated.',
     'noRepliesYet' => 'There are no replies to this ticket yet. Please check back later.',
     'youWrote' => 'You wrote:',
     'ispWrote' => ':companyName wrote:',
@@ -24,4 +25,6 @@ return [
     'neverAskForCredit' => 'We will never ask for your password or credit card info',
     'statusOpen' => 'Open',
     'statusClosed' => 'Closed',
+    'closeTicket' => 'Close ticket',
+    'reopenTicket' => 'Reopen ticket',
 ];

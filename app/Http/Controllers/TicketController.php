@@ -4,12 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Actions\CreateAccountTicketAction;
 use App\Actions\CreateTicketReplyAction;
+use App\Actions\UpdateTicketStatusAction;
 use App\DataTransferObjects\AccountTicketData;
 use App\DataTransferObjects\TicketReplyData;
 use App\Http\Requests\TicketReplyRequest;
 use App\Http\Requests\TicketRequest;
 use App\SonarApi\Client;
 use App\SonarApi\Resources\Ticket;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
@@ -157,17 +159,67 @@ class TicketController extends Controller
         }
     }
 
+    public function reopen(
+        int $ticketId,
+        UpdateTicketStatusAction $updateTicketStatusAction,
+        CreateTicketReplyAction $createTicketReplyAction
+    ): RedirectResponse {
+        try{
+            if ($ticket = $this->getTicket($ticketId)) {
+                $updateTicketStatusAction($ticket, 'OPEN');
+
+                $createTicketReplyAction(new TicketReplyData([
+                    'ticket' => $ticket,
+                    'body' => '[Automated response] Reopening ticket from customer portal.',
+                    'author' => get_user()->name,
+                    'authorEmail' => get_user()->emailAddress,
+                ]));
+
+                return redirect()->back()->with('success', utrans("tickets.ticketUpdated"));
+            }
+        } catch (\Exception $e) {
+            //
+        }
+
+        return redirect()->back()->withErrors(utrans("errors.failedToUpdateTicket"));
+    }
+
+    public function close(
+        int $ticketId,
+        UpdateTicketStatusAction $updateTicketStatusAction,
+        CreateTicketReplyAction $createTicketReplyAction
+    ): RedirectResponse {
+        try {
+            if ($ticket = $this->getTicket($ticketId)) {
+                $updateTicketStatusAction($ticket, 'CLOSED');
+
+                $createTicketReplyAction(new TicketReplyData([
+                    'ticket' => $ticket,
+                    'body' => '[Automated response] Closing ticket from customer portal.',
+                    'author' => get_user()->name,
+                    'authorEmail' => get_user()->emailAddress,
+                ]));
+
+                return redirect()->back()->with('success', utrans("tickets.ticketUpdated"));
+            }
+        } catch (\Exception $e) {
+            //
+        }
+
+        return redirect()->back()->withErrors(utrans("errors.failedToUpdateTicket"));
+    }
+
     private function getTicket(int $id): ?Ticket
     {
         return $this->sonarClient
             ->tickets()
-            ->with(['ticketReplies' => fn($query) => $query->sortBy('createdAt', 'DESC')])
+            ->with(['ticketReplies' => fn($query) => $query->sortBy('createdAt', 'ASC')])
             ->where('id', $id)
-            ->where('ticketable_id', [
+            ->where('ticketableId', [
                 session()->get('account')->id,
                 ...session()->get('child_accounts')->map(fn($account) => $account->id)->toArray()
             ])
-            ->where('ticketable_type', 'Account')
+            ->where('ticketableType', 'Account')
             ->first();
     }
 

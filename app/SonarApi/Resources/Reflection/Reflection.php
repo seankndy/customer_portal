@@ -37,20 +37,4 @@ class Reflection
 
         return new FieldType($type, $isArray);
    }
-
-    /**
-     * Get property's meta data key/value pairs
-     */
-    public static function getPropertyMeta(\ReflectionProperty $property): array
-    {
-        $meta = [];
-        if ($docComment = $property->getDocComment()) {
-            if (preg_match_all('/@meta\s+(.+?)\s+(.+)/', $docComment, $m)) {
-                foreach ($m[1] as $i => $key) {
-                    $meta[$key] = $m[2][$i];
-                }
-            }
-        }
-        return $meta;
-    }
 }

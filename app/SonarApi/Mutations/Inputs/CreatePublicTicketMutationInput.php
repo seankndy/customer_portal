@@ -6,24 +6,24 @@ use Carbon\Carbon;
 
 class CreatePublicTicketMutationInput extends BaseInput
 {
-    public ?string $subject;
+    protected ?string $subject;
 
-    public ?string $description;
+    protected ?string $description;
 
-    public string $status;
+    protected string $status;
 
-    public string $priority;
+    protected string $priority;
 
-    public ?Carbon $dueDate;
+    protected ?Carbon $dueDate;
 
-    public int $ticketableId;
+    protected int $ticketableId;
 
-    public string $ticketableType;
+    protected string $ticketableType;
 
-    public ?int $parentTicketId;
+    protected ?int $parentTicketId;
 
-    public ?int $ticketGroupId;
+    protected ?int $ticketGroupId;
 
-    public int $inboundMailboxId;
+    protected int $inboundMailboxId;
 
 }

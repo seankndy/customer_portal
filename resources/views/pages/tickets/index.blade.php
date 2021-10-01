@@ -67,7 +67,7 @@
                   @foreach($tickets as $ticket)
                   <tr>
                      <TD id="ticket-status">
-                        <a href="{{action("TicketController@show",['tickets' => $ticket->id])}}">
+                        <a href="{{action("TicketController@show",['id' => $ticket->id])}}">
                            {{$ticket->subject}}
                         </a>
                         @if ($ticketAccounts[$ticket->id]->physicalAddress())
