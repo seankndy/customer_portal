@@ -2,6 +2,7 @@
 
 use Carbon\Carbon;
 use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Lang;
@@ -32,28 +33,23 @@ function bytes_to_gigabytes($value)
 function getAvailableLanguages($language = "en")
 {
     $languages = [];
-    $dirs = glob(resource_path("lang/*"));
-    foreach ($dirs as $dir)
-    {
-        $boom = explode("/",$dir);
-        if (strlen($boom[count($boom)-1]) === 2)
-        {
-            $languages[$boom[count($boom)-1]] = trans("languages." . $boom[count($boom)-1],[],$language);
-        }
+    foreach (config('app.available_locales') as $locale => $lang) {
+        $languages[$locale] = trans("languages." . $locale, [], $language);
     }
     return $languages;
 }
 
-function language(\Illuminate\Http\Request $request = null): string
+function language(Request $request = null): string
 {
-    if ($user = Auth::user()) {
-        $language = $user->language();
-    } else if ($request && $request->cookie('language')) {
-        $language = $request->cookie('language');
-    } else {
-        $language = Lang::getLocale();
+    if ($language = optional(Auth::user())->language()) {
+        return $language;
     }
-    return $language;
+
+    if ($request->cookie('language')) {
+        return $request->cookie('language');
+    }
+
+    return Lang::getLocale();
 }
 
 /**

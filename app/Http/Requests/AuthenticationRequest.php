@@ -27,7 +27,7 @@ class AuthenticationRequest extends FormRequest
         return [
             'username' => 'required|string',
             'password' => 'required|string',
-            'language' => 'in:' . implode(",",array_keys(getAvailableLanguages())),
+            'language' => 'in:' . implode(",",array_keys(config('app.available_locales'))),
         ];
     }
 }

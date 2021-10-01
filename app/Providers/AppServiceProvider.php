@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Services\LanguageService;
 use App\SystemSetting;
 use GuzzleHttp\Client as GuzzleClient;
 use Illuminate\Support\ServiceProvider;

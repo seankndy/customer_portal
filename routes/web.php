@@ -22,7 +22,7 @@ Route::get("/settings/subdivisions/{country}", "SubdivisionController@authentica
 Route::post("/settings", "AppConfigController@save");
 Route::post("/settings/auth", "AppConfigController@authenticate");
 
-Route::group(['middleware' => ['language']], function () {
+Route::group(['middleware' => ['localization']], function () {
     Route::group(['middleware' => ['web','guest']], function () {
         //Unauthenticated routes
         Route::get('/', 'Auth\LoginController@show')->name('login');

@@ -25,7 +25,7 @@ class AppConfigRequest extends FormRequest
     {
         return [
             'url' => 'required|url',
-            'locale' => 'required|in:' . implode(",", array_keys(getAvailableLanguages())),
+            'locale' => 'required|in:' . implode(",", array_keys(config('app.available_locales'))),
             'mail_host' => 'required|string',
             'mail_username' => 'required|string',
             'mail_password' => 'required|string',

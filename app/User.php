@@ -41,17 +41,13 @@ class User implements Authenticatable
         return $user;
     }
 
-    public function language(): string
+    public function language(): ?string
     {
         if ($usernameLanguage = UsernameLanguage::where('username', $this->username)->first()) {
             return $usernameLanguage->language;
         }
 
-        if (request()->cookie('language')) {
-            return request()->cookie('language');
-        }
-
-        return Lang::getLocale();
+        return null;
     }
 
     public function getAuthIdentifierName()

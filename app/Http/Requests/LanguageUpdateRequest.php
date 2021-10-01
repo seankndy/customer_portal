@@ -24,7 +24,7 @@ class LanguageUpdateRequest extends FormRequest
     public function rules()
     {
         return [
-            'language' => 'required|string|in:' . implode(',', array_keys(getAvailableLanguages())),
+            'language' => 'required|string|in:' . implode(',', array_keys(config('app.available_locales'))),
         ];
     }
 }
