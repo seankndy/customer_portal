@@ -211,6 +211,7 @@ class QueryBuilder
         }
 
         if ($this->where) {
+            // TODO: these variables dont come in if theyre coming from nested queries.
             $queryBuilder->setVariable($this->objectName.'_search', 'Search')
                 ->setArgument('search', ['$'.$this->objectName.'_search']);
 
