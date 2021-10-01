@@ -2,9 +2,9 @@
 
 namespace App\SonarApi\Mutations;
 
-use App\SonarApi\Queries\Query;
+use App\SonarApi\Queries\QueryInterface;
 
-interface Mutation extends Query
+interface MutationInterface extends QueryInterface
 {
     public function query(): \GraphQL\Mutation;
 }

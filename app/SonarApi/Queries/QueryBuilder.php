@@ -4,13 +4,13 @@ namespace App\SonarApi\Queries;
 
 use App\SonarApi\Client;
 use App\SonarApi\Resources\BaseResource;
-use GraphQL\RawObject;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
 
 class QueryBuilder
 {
-    private Client $client;
+    private ?Client $client = null;
 
     private string $resource;
 
@@ -18,14 +18,15 @@ class QueryBuilder
 
     private array $with = [];
 
+    private bool $many = true;
+
+    private ?self $parentQueryBuilder;
+
     private ?string $sortBy = null;
 
     private string $sortOrder = 'ASC';
 
-    private array $where = [
-        'integer_fields' => [],
-        'string_fields' => [],
-    ];
+    private array $where = [];
 
     private bool $paginate = false;
 
@@ -33,32 +34,52 @@ class QueryBuilder
 
     private int $paginatePerPage;
 
+    private array $declaredVariables = [];
+
+    private array $resourceFieldsAndTypes;
+
     public function __construct(
-        Client $client,
         string $resourceClass,
-        string $objectName
+        string $objectName,
+        self $parentQueryBuilder = null
     ) {
         if (!is_subclass_of($resourceClass, BaseResource::class)) {
             throw new \InvalidArgumentException("\$resourceClass must by subclass of ".BaseResource::class);
         }
 
-        $this->client = $client;
         $this->resource = $resourceClass;
+        $this->resourceFieldsAndTypes = $this->resource::fieldsAndTypes();
         $this->objectName = $objectName;
+        $this->parentQueryBuilder = $parentQueryBuilder;
+        $this->with((new $resourceClass())->with());
+    }
+
+    public function setClient(Client $client): self
+    {
+        $this->client = $client;
+
+        return $this;
     }
 
     /**
      * Execute the query.
-     * @return Collection<int, BaseResource>
+     * @return BaseResource|Collection<int, BaseResource>|null
      * @throws \App\SonarApi\Exceptions\SonarHttpException
      * @throws \App\SonarApi\Exceptions\SonarQueryException
      */
-    public function get(): Collection
+    public function get()
     {
-        echo (string)$this->getQuery()->query();
-        print_r($this->getQuery()->variables());
+        if (!$this->client) {
+            throw new \Exception("Cannot call get() without a client!");
+        }
+
         $response = $this->client->query($this->getQuery());
 
+        if (!$this->many) {
+            return $response->{$this->objectName}
+                ? ($this->resource)::fromJsonObject($response->{$this->objectName})
+                : null;
+        }
         return collect($response->{$this->objectName}->entities)
             ->map(fn($entity) => ($this->resource)::fromJsonObject($entity));
     }
@@ -92,13 +113,55 @@ class QueryBuilder
         ]);
     }
 
+    private function getRootQueryBuilder()
+    {
+        if ($this->isRoot()) {
+            return $this;
+        }
+
+        return $this->parentQueryBuilder->getRootQueryBuilder();
+    }
+
+    public function isRoot()
+    {
+        return $this->parentQueryBuilder === null;
+    }
+
+    public function many(bool $many): self
+    {
+        $this->many = $many;
+
+        return $this;
+    }
+
     public function with(...$args): self
     {
         foreach ($args as $arg) {
-            if (is_array($arg)) {
-                $this->with = \array_merge($this->with, $arg);
-            } else {
-                $this->with[$arg] = 0;
+            if (!is_array($arg)) {
+                $arg = [$arg => 0];
+            }
+
+            foreach ($arg as $relation => $closure) {
+                if (is_int($relation)) {
+                    $relation = $closure;
+                    $closure = 0;
+                }
+
+                $relationField = Str::snake($relation);
+
+                if (!isset($this->resourceFieldsAndTypes[$relationField])
+                    || !$this->resourceFieldsAndTypes[$relationField]->isResource()) {
+                    throw new \InvalidArgumentException("Relation specified ($relation) is not a valid resource.");
+                }
+
+                $relationQueryBuilder = (new self($this->resourceFieldsAndTypes[$relationField]->type(), $relationField, $this))
+                    ->many($this->resourceFieldsAndTypes[$relationField]->arrayOf());
+
+                if (is_callable($closure)) {
+                    $closure($relationQueryBuilder);
+                }
+
+                $this->with[$relation] = $relationQueryBuilder;
             }
         }
 
@@ -107,7 +170,7 @@ class QueryBuilder
 
     public function sortBy(string $sortBy, string $sortOrder = 'ASC'): self
     {
-        $this->sortBy = $sortBy;
+        $this->sortBy = Str::snake($sortBy);
         $this->sortOrder($sortOrder);
 
         return $this;
@@ -158,6 +221,10 @@ class QueryBuilder
             throw new \InvalidArgumentException("Boolean values only support an equality (=) comparison.");
         }
 
+        if (!isset($this->where[$fieldType])) {
+            $this->where[$fieldType] = [];
+        }
+
         $this->where[$fieldType][$field] = \array_merge(
             $this->where[$fieldType][$field] ?? [],
             [$value, $operator]
@@ -166,38 +233,39 @@ class QueryBuilder
         return $this;
     }
 
-    public function getQuery($many = true): Query
+    public function declareVariable(string $name, string $type, bool $isRequired = false, $defaultValue = null): self
+    {
+        if ($this->parentQueryBuilder) {
+            $this->getRootQueryBuilder()->declareVariable($name, $type, $isRequired, $defaultValue);
+        } else {
+            $this->declaredVariables[] = [$name, $type, $isRequired, $defaultValue];
+        }
+
+        return $this;
+    }
+
+    public function getQuery(): Query
     {
         $queryBuilder = new \GraphQL\QueryBuilder\QueryBuilder($this->objectName);
 
         $variables = [];
         $manySelectionSet = [];
-        foreach ($this->resource::fieldsAndTypes() as $field => $type) {
-            if (is_array($type)) {
-                $type = $type[0];
-                $manyRelation = true;
-            } else {
-                $manyRelation = false;
-            }
+        foreach ($this->resourceFieldsAndTypes as $field => $type) {
+            if ($type->isResource()) {
+                $relationName = Str::camel($field);
 
-            if (is_subclass_of($type, BaseResource::class)) {
-                if (!isset($this->with[$field])) {
+                if (!isset($this->with[$relationName])) {
                     continue;
                 }
 
-                $relationQueryBuilder = new self($this->client, $type, $field);
-                if (is_callable($this->with[$field])) {
-                    ($this->with[$field])($relationQueryBuilder);
-                }
-
-                $relationQuery = $relationQueryBuilder->getQuery($manyRelation);
+                $relationQuery = $this->with[$relationName]->getQuery();
                 $select = $relationQuery->query();
                 $variables = \array_merge($variables, $relationQuery->variables());
             } else {
                 $select = $field;
             }
 
-            if ($many) {
+            if ($this->many) {
                 $manySelectionSet[] = $select;
             } else {
                 $queryBuilder->selectField($select);
@@ -211,15 +279,16 @@ class QueryBuilder
         }
 
         if ($this->where) {
-            // TODO: these variables dont come in if theyre coming from nested queries.
-            $queryBuilder->setVariable($this->objectName.'_search', 'Search')
-                ->setArgument('search', ['$'.$this->objectName.'_search']);
+            $this->declareVariable($this->objectName.'_search', 'Search');
+
+            $queryBuilder->setArgument('search', ['$'.$this->objectName.'_search']);
 
             $variables[$this->objectName.'_search'] = $this->buildSearchFromWhere();
         }
         if ($this->sortBy) {
-            $queryBuilder->setVariable($this->objectName.'_sorter', 'Sorter')
-                ->setArgument('sorter', ['$'.$this->objectName.'_sorter']);
+            $this->declareVariable($this->objectName.'_sorter', 'Sorter');
+
+            $queryBuilder->setArgument('sorter', ['$'.$this->objectName.'_sorter']);
 
             $variables[$this->objectName.'_sorter'] = [
                 'attribute' => $this->sortBy,
@@ -227,7 +296,9 @@ class QueryBuilder
             ];
         }
         if ($this->paginate) {
-            $queryBuilder->setVariable($this->objectName.'_paginator', 'Paginator')
+            $this->declareVariable($this->objectName.'_paginator', 'Paginator');
+
+            $queryBuilder
                 ->setArgument('paginator', '$'.$this->objectName.'_paginator')
                 ->selectField(
                     (new \GraphQL\Query('page_info'))
@@ -244,46 +315,13 @@ class QueryBuilder
             ];
         }
 
-        return new class($queryBuilder, $variables) implements Query {
-            public function __construct(
-                \GraphQL\QueryBuilder\QueryBuilder $queryBuilder,
-                array $variables
-            ) {
-                $this->queryBuilder = $queryBuilder;
-                $this->variables = $variables;
+        if ($this->isRoot()) {
+            foreach ($this->declaredVariables as $declaredVariable) {
+                $queryBuilder->setVariable(...$declaredVariable);
             }
-            public function query(): \GraphQL\Query {
-                return $this->queryBuilder->getQuery();
-            }
-            public function variables(): array {
-                return $this->variables;
-            }
-        };
-    }
-
-    public function variables(): array
-    {
-        $variables = [];
-
-        if ($this->where) {
-            $variables['search'] = $this->buildSearchFromWhere();
         }
 
-        if ($this->sortBy) {
-            $variables['sorter'] = [
-                'attribute' => $this->sortBy,
-                'direction' => $this->sortOrder,
-            ];
-        }
-
-        if ($this->paginate) {
-            $variables['paginator'] = [
-                'page' => $this->paginateCurrentPage,
-                'records_per_page' => $this->paginatePerPage,
-            ];
-        }
-
-        return $variables;
+        return new Query($queryBuilder->getQuery(), $variables);
     }
 
     private function buildSearchFromWhere(): array
@@ -299,6 +337,7 @@ class QueryBuilder
         foreach ($this->where as $type => $fieldValues) {
             foreach ($fieldValues as $field => $valuesAndOperator) {
                 [$values, $operator] = $valuesAndOperator;
+                $field = Str::snake($field);
 
                 foreach ($values as $value) {
                     if ($type == 'integer_fields') {

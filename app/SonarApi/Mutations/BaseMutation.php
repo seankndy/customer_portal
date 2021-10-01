@@ -3,9 +3,10 @@
 namespace App\SonarApi\Mutations;
 
 use App\SonarApi\Mutations\Inputs\Input;
+use App\SonarApi\Queries\QueryBuilder;
 use GraphQL\Variable;
 
-abstract class BaseMutation implements Mutation
+abstract class BaseMutation implements MutationInterface
 {
     public function query(): \GraphQL\Mutation
     {
@@ -27,7 +28,11 @@ abstract class BaseMutation implements Mutation
             ->setArguments($arguments)
             ->setSelectionSet(
             $this->returnResource()
-                ? ($this->returnResource())::graphQLQuery(false)
+                ? (new QueryBuilder($this->returnResource(), ''))
+                    ->many(false)
+                    ->getQuery()
+                    ->query()
+                    ->getSelectionSet()
                 : []
             );
     }

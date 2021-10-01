@@ -23,6 +23,7 @@ class Account extends BaseResource
      */
     public array $addresses;
 
+    protected array $with = ['accountStatus', 'company'];
 
     public function physicalAddress(): ?Address
     {

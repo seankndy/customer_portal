@@ -1,38 +1,41 @@
 <?php
 
-namespace App\SonarApi;
+namespace App\SonarApi\Resources\Reflection;
 
 class Reflection
 {
     /**
-     * @return \ReflectionProperty[]
      * @throws \ReflectionException
      */
-    public static function getPublicProperties($objectOrClass): array
+    public static function getResourceFields($objectOrClass): array
     {
-        return (new \ReflectionClass($objectOrClass))
+        $properties = (new \ReflectionClass($objectOrClass))
             ->getProperties(\ReflectionProperty::IS_PUBLIC);
+
+        $fields = [];
+        foreach ($properties as $property) {
+            $fields[$property->getName()] = self::getFieldType($property);
+        }
+        return $fields;
     }
 
-    /**
-     * Get property's type, wrap property type in array if the type is an array-of the type
-     * @return array|string|null
-     */
-    public static function getPropertyType(\ReflectionProperty $property)
+    public static function getFieldType(\ReflectionProperty $property): FieldType
     {
+        $type = null;
+        $isArray = false;
         if ($docComment = $property->getDocComment()) {
             if (preg_match('/@var\s+(.+)/', $docComment, $m)) {
                 $type = $m[1];
                 if (substr($type, -2) == '[]') {
-                    return [substr($type, 0, -2)];
-                } else {
-                    return $type;
+                    $type = substr($type, 0, -2);
+                    $isArray = true;
                 }
             }
         } else if (($type = $property->getType()) !== null) {
-            return $type->getName();
+            $type = $type->getName();
         }
-        return null;
+
+        return new FieldType($type, $isArray);
    }
 
     /**

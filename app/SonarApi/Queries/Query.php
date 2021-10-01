@@ -2,9 +2,25 @@
 
 namespace App\SonarApi\Queries;
 
-interface Query
+class Query implements QueryInterface
 {
-    public function query(): \GraphQL\Query;
+    private \GraphQL\Query $query;
 
-    public function variables(): array;
+    private array $variables;
+
+    public function __construct(\GraphQL\Query $query, array $variables)
+    {
+        $this->query = $query;
+        $this->variables = $variables;
+    }
+
+    public function query(): \GraphQL\Query
+    {
+        return $this->query;
+    }
+
+    public function variables(): array
+    {
+        return $this->variables;
+    }
 }

@@ -36,13 +36,14 @@ class TicketController extends Controller
 
         $tickets = $this->sonarClient
             ->tickets()
-            ->where('ticketable_id', [
+            ->with(['ticketReplies' => fn($query) => $query->sortBy('createdAt', 'DESC')])
+            ->where('ticketableId', [
                 session()->get('account')->id,
                 ...session()->get('child_accounts')->map(fn($account) => $account->id)->toArray()
             ])
-            ->where('ticketable_type', 'Account')
+            ->where('ticketableType', 'Account')
             ->where('status', $status === 'OPEN' ? '!=' : '=', $status === 'OPEN' ? 'CLOSED' : $status)
-            ->sortBy('updated_at', 'DESC')
+            ->sortBy('updatedAt', 'DESC')
             ->paginate(5, $request->input('page', 1), '/'.$request->path());
 
         $ticketAccounts = $this->associateTicketsToAccounts($tickets);
@@ -145,7 +146,7 @@ class TicketController extends Controller
         try {
             $createTicketReplyAction(new TicketReplyData([
                 'ticket' => $ticket,
-                'body' => $request->input('body'),
+                'body' => $request->input('reply'),
                 'author' => get_user()->name,
                 'authorEmail' => get_user()->emailAddress,
             ]));
@@ -160,6 +161,7 @@ class TicketController extends Controller
     {
         return $this->sonarClient
             ->tickets()
+            ->with(['ticketReplies' => fn($query) => $query->sortBy('createdAt', 'DESC')])
             ->where('id', $id)
             ->where('ticketable_id', [
                 session()->get('account')->id,

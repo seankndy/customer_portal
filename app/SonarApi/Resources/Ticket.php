@@ -33,7 +33,7 @@ class Ticket extends BaseResource
      */
     public array $ticketCategories;
 
-    public TicketGroup $ticketGroups;
+    public TicketGroup $ticketGroup;
 
     /**
      * @var \App\SonarApi\Resources\TicketRecipient[]
@@ -42,21 +42,25 @@ class Ticket extends BaseResource
 
     /**
      * @var \App\SonarApi\Resources\TicketReply[]
-     * @meta sortBy created_at
-     * @meta sortDir DESC
      */
     public array $ticketReplies;
 
     /**
      * @var \App\SonarApi\Resources\TicketComment[]
-     * @meta sortBy created_at
-     * @meta sortDir DESC
      */
     public array $ticketComments;
 
+    protected array $with = [
+        'ticketRecipients',
+        'ticketGroup',
+        'ticketCategories',
+    ];
+
     public function latestReply(): ?TicketReply
     {
-        return $this->ticketReplies ? $this->ticketReplies[0] : null;
+        return collect($this->ticketReplies)->sortByDesc(function ($reply) {
+            return $reply->createdAt->getTimestamp();
+        })->first();
     }
 
 }

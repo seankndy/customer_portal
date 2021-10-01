@@ -2,16 +2,15 @@
 
 namespace App\SonarApi;
 
-use App\SonarApi\Mutations\BaseMutation;
-use App\SonarApi\Mutations\Mutation;
-use App\SonarApi\Queries\AccountsQuery;
-use App\SonarApi\Queries\ContactsQuery;
-use App\SonarApi\Queries\Query;
+use App\SonarApi\Mutations\ClientMutator;
+use App\SonarApi\Mutations\MutationInterface;
+use App\SonarApi\Queries\QueryInterface;
 use App\SonarApi\Queries\QueryBuilder;
-use App\SonarApi\Queries\TicketsQuery;
 use App\SonarApi\Exceptions\SonarHttpException;
 use App\SonarApi\Exceptions\SonarQueryException;
 use App\SonarApi\Resources\Account;
+use App\SonarApi\Resources\Contact;
+use App\SonarApi\Resources\Ticket;
 use GuzzleHttp\ClientInterface as GuzzleClientInterface;
 
 class Client
@@ -34,44 +33,22 @@ class Client
 
     public function accounts(): QueryBuilder
     {
-        return new QueryBuilder(
-            $this,
-            Account::class,
-            'accounts'
-        );
+        return Account::newQueryBuilder()->setClient($this);
     }
 
-    public function tickets(): TicketsQuery
+    public function tickets(): QueryBuilder
     {
-        return new TicketsQuery($this);
+        return Ticket::newQueryBuilder()->setClient($this);
     }
 
-    public function contacts(): ContactsQuery
+    public function contacts(): QueryBuilder
     {
-        return new ContactsQuery($this);
+        return Contact::newQueryBuilder()->setClient($this);
     }
 
-    public function mutations()
+    public function mutations(): ClientMutator
     {
-        return new class($this) {
-            private Client $client;
-
-            public function __construct(Client $client)
-            {
-                $this->client = $client;
-            }
-
-            public function run(BaseMutation $mutation)
-            {
-                $response = $this->client->mutate($mutation);
-
-                if ($mutation->returnResource()) {
-                    return ($mutation->returnResource())::fromJsonObject($response->{$mutation->name()});
-                }
-
-                return $response;
-            }
-        };
+        return new ClientMutator($this);
     }
 
     /**
@@ -79,7 +56,7 @@ class Client
      * @throws SonarHttpException
      * @throws SonarQueryException
      */
-    public function query(Query $query)
+    public function query(QueryInterface $query)
     {
         try {
             $response = $this->httpClient->request(
@@ -114,7 +91,7 @@ class Client
      * @throws SonarHttpException
      * @throws SonarQueryException
      */
-    public function mutate(Mutation $mutation)
+    public function mutate(MutationInterface $mutation)
     {
         return $this->query($mutation);
     }

@@ -2,7 +2,8 @@
 
 namespace App\SonarApi\Resources;
 
-use App\SonarApi\Reflection;
+use App\SonarApi\Queries\QueryBuilder;
+use App\SonarApi\Resources\Reflection\Reflection;
 use Carbon\Carbon;
 use GraphQL\Query;
 use GraphQL\RawObject;
@@ -10,7 +11,9 @@ use Illuminate\Support\Str;
 
 abstract class BaseResource
 {
-    public function __construct(array $data)
+    protected array $with = [];
+
+    public function __construct(array $data = [])
     {
         foreach ($data as $key => $value) {
             if (!property_exists($this, $key)) {
@@ -19,6 +22,19 @@ abstract class BaseResource
             }
             $this->$key = $value;
         }
+    }
+
+    public function with(): array
+    {
+        $with = [];
+        foreach ($this->with as $key => $value) {
+            if (is_int($key)) {
+                $with[$value] = 0;
+            } else {
+                $with[$key] = $value;
+            }
+        }
+        return $with;
     }
 
     /**
@@ -30,26 +46,23 @@ abstract class BaseResource
     {
         $data = [];
 
-        foreach (Reflection::getPublicProperties(static::class) as $property) {
-            $jsonVar = Str::snake($property->getName());
-            $propertyVar = $property->getName();
+        foreach (Reflection::getResourceFields(static::class) as $field => $type) {
+            $jsonVar = Str::snake($field);
 
             if (property_exists($jsonObject, $jsonVar)) {
-                $type = Reflection::getPropertyType($property);
-
-                if (is_array($type)) {
-                    $data[$propertyVar] = \array_map(
-                        fn($entity) => ($type[0])::fromJsonObject($entity),
+                if ($type->arrayOf()) {
+                    $data[$field] = \array_map(
+                        fn($entity) => ($type->type())::fromJsonObject($entity),
                         $jsonObject->$jsonVar->entities
                     );
-                } else if (is_a($type, Carbon::class, true)) {
-                    $data[$propertyVar] = $jsonObject->$jsonVar ? Carbon::createFromTimeString($jsonObject->$jsonVar) : null;
-                } else if (is_a($type, \DateTime::class, true)) {
-                    $data[$propertyVar] = $jsonObject->$jsonVar ? new \DateTime($jsonObject->$jsonVar) : null;
-                } else if (is_subclass_of($type, BaseResource::class)) {
-                    $data[$propertyVar] = $type::fromJsonObject($jsonObject->$jsonVar);
+                } else if (is_a($type->type(), Carbon::class, true)) {
+                    $data[$field] = $jsonObject->$jsonVar ? Carbon::createFromTimeString($jsonObject->$jsonVar) : null;
+                } else if (is_a($type->type(), \DateTime::class, true)) {
+                    $data[$field] = $jsonObject->$jsonVar ? new \DateTime($jsonObject->$jsonVar) : null;
+                } else if (is_subclass_of($type->type(), BaseResource::class)) {
+                    $data[$field] = $jsonObject->$jsonVar ? ($type->type())::fromJsonObject($jsonObject->$jsonVar) : null;
                 } else {
-                    $data[$propertyVar] = $jsonObject->$jsonVar;
+                    $data[$field] = $jsonObject->$jsonVar;
                 }
             }
         }
@@ -58,57 +71,24 @@ abstract class BaseResource
     }
 
     /**
-     * Create GraphQL Query based on the property types of the resource class.
-     * Override this if a resource's properties do not map directly to Sonar fields
-     * by simply converting camel to snake case.
+     * @throws \ReflectionException
      */
-    public static function graphQLQuery($wrapInEntities = true): array
-    {
-        $vars = [];
-        foreach (Reflection::getPublicProperties(static::class) as $property) {
-            $type = Reflection::getPropertyType($property);
-            if (is_array($type)) {
-                $type = $type[0];
-                $array = true;
-            } else {
-                $array = false;
-            }
-
-            if (is_subclass_of($type, self::class)) {
-                if ($array) {
-                    $query = (new Query(Str::snake($property->getName())))
-                        ->setSelectionSet($type::graphQLQuery(true));
-
-                    $meta = Reflection::getPropertyMeta($property);
-                    if (isset($meta['sortBy'])) {
-                        $dir = \strtoupper($meta['sortDir'] ?? 'ASC');
-                        $query->setArguments([
-                            'sorter' => new RawObject('[{attribute:"' . $meta['sortBy'] . '",direction:' . $dir . '}]')
-                        ]);
-                    }
-
-                    $vars[] = $query;
-                } else {
-                    $classBaseName = \substr($type, \strrpos($type, '\\') + 1);
-                    $vars[] = (new Query(Str::snake(\lcfirst($classBaseName))))
-                        ->setSelectionSet($type::graphQLQuery(false));
-                }
-            } else {
-                $vars[] = Str::snake($property->getName());
-            }
-        }
-
-        return $wrapInEntities ? [(new Query('entities'))->setSelectionSet($vars)] : $vars;
-    }
-
     public static function fieldsAndTypes(): array
     {
         $fields = [];
-        foreach (Reflection::getPublicProperties(static::class) as $property) {
-            $type = Reflection::getPropertyType($property);
-;
-            $fields[Str::snake($property->getName())] = $type;
+        foreach (Reflection::getResourceFields(static::class) as $field => $type) {
+            $fields[Str::snake($field)] = $type;
         }
         return $fields;
+    }
+
+    public static function newQueryBuilder()
+    {
+        $className = (new \ReflectionClass(static::class))->getShortName();
+
+        return new QueryBuilder(
+            static::class,
+            Str::lower(Str::plural($className))
+        );
     }
 }
