@@ -10,33 +10,63 @@ use Illuminate\Support\Str;
 
 class QueryBuilder
 {
-    private ?Client $client = null;
-
+    /**
+     * The resource class this QueryBuilder is for.
+     */
     private string $resource;
-
+    /**
+     * The GraphQL query entity name.
+     */
     private string $objectName;
-
+    /**
+     * Relations to include.
+     */
     private array $with = [];
-
+    /**
+     * If this query will return an array of resources.
+     */
     private bool $many = true;
-
+    /**
+     * If a QueryBuilder
+     */
     private ?self $parentQueryBuilder;
-
+    /**
+     * Sorting field.
+     */
     private ?string $sortBy = null;
-
+    /**
+     * Sorting direction.
+     */
     private string $sortOrder = 'ASC';
-
+    /**
+     * Search criteria.
+     */
     private array $where = [];
-
+    /**
+     * Should we paginate?
+     */
     private bool $paginate = false;
-
+    /**
+     * Current pagination page.
+     */
     private int $paginateCurrentPage;
-
+    /**
+     * Results per page.
+     */
     private int $paginatePerPage;
-
+    /**
+     * Variables declared for the root QueryBuilder.
+     * Only the root QueryBuilder should have this populated.
+     */
     private array $declaredVariables = [];
-
+    /**
+     * $this->resource's fields (properties) and types gotten via Reflection.
+     */
     private array $resourceFieldsAndTypes;
+    /**
+     * Sonar API Client, Client is required if the user code wants to call get(), first() or paginate().
+     */
+    private ?Client $client = null;
 
     public function __construct(
         string $resourceClass,
@@ -54,15 +84,9 @@ class QueryBuilder
         $this->with((new $resourceClass())->with());
     }
 
-    public function setClient(Client $client): self
-    {
-        $this->client = $client;
-
-        return $this;
-    }
-
     /**
-     * Execute the query.
+     * Execute the query return result(s).
+     *
      * @return BaseResource|Collection<int, BaseResource>|null
      * @throws \App\SonarApi\Exceptions\SonarHttpException
      * @throws \App\SonarApi\Exceptions\SonarQueryException
@@ -85,20 +109,32 @@ class QueryBuilder
     }
 
     /**
+     * Shortcut for getting first item from set of results.
+     *
      * @throws \App\SonarApi\Exceptions\SonarHttpException
      * @throws \App\SonarApi\Exceptions\SonarQueryException
+     * @throws \Exception
      */
     public function first()
     {
+        if (!$this->many) {
+            throw new \Exception("first() cannot be called because of singular query.");
+        }
         return $this->get()->first();
     }
 
     /**
+     * Get and paginate the results.  Pagination is done server-side with Sonar's GraphQL paginator.
+     *
      * @throws \App\SonarApi\Exceptions\SonarHttpException
      * @throws \App\SonarApi\Exceptions\SonarQueryException
      */
     public function paginate(int $perPage = 25, int $currentPage = 1, string $path = '/'): LengthAwarePaginator
     {
+        if (!$this->many) {
+            throw new \Exception("paginate() cannot be called because of singular query.");
+        }
+
         $this->paginate = true;
         $this->paginatePerPage = $perPage;
         $this->paginateCurrentPage = $currentPage;
@@ -113,20 +149,16 @@ class QueryBuilder
         ]);
     }
 
-    private function getRootQueryBuilder()
+    public function setClient(Client $client): self
     {
-        if ($this->isRoot()) {
-            return $this;
-        }
+        $this->client = $client;
 
-        return $this->parentQueryBuilder->getRootQueryBuilder();
+        return $this;
     }
 
-    public function isRoot()
-    {
-        return $this->parentQueryBuilder === null;
-    }
-
+    /**
+     * Set if this query will return an array of resources.
+     */
     public function many(bool $many): self
     {
         $this->many = $many;
@@ -134,6 +166,10 @@ class QueryBuilder
         return $this;
     }
 
+    /**
+     * Specify relations to include in query.  You may pass array with key being relation and value a closure which
+     * receives a QueryBuilder instance for the relation.
+     */
     public function with(...$args): self
     {
         foreach ($args as $arg) {
@@ -154,8 +190,11 @@ class QueryBuilder
                     throw new \InvalidArgumentException("Relation specified ($relation) is not a valid resource.");
                 }
 
-                $relationQueryBuilder = (new self($this->resourceFieldsAndTypes[$relationField]->type(), $relationField, $this))
-                    ->many($this->resourceFieldsAndTypes[$relationField]->arrayOf());
+                $relationQueryBuilder = (new self(
+                    $this->resourceFieldsAndTypes[$relationField]->type(),
+                    $relationField,
+                    $this
+                ))->many($this->resourceFieldsAndTypes[$relationField]->arrayOf());
 
                 if (is_callable($closure)) {
                     $closure($relationQueryBuilder);
@@ -168,6 +207,9 @@ class QueryBuilder
         return $this;
     }
 
+    /**
+     * Set sorting field and optionally direction.
+     */
     public function sortBy(string $sortBy, string $sortOrder = 'ASC'): self
     {
         $this->sortBy = Str::snake($sortBy);
@@ -176,6 +218,9 @@ class QueryBuilder
         return $this;
     }
 
+    /**
+     * Set sorting direction.
+     */
     public function sortOrder(string $sortOrder): self
     {
         $this->sortOrder = \strtoupper($sortOrder);
@@ -183,6 +228,9 @@ class QueryBuilder
         return $this;
     }
 
+    /**
+     * Specify a search filter criteria.
+     */
     public function where(string $field, ...$args): self
     {
         if (count($args) == 1) {
@@ -233,17 +281,9 @@ class QueryBuilder
         return $this;
     }
 
-    public function declareVariable(string $name, string $type, bool $isRequired = false, $defaultValue = null): self
-    {
-        if ($this->parentQueryBuilder) {
-            $this->getRootQueryBuilder()->declareVariable($name, $type, $isRequired, $defaultValue);
-        } else {
-            $this->declaredVariables[] = [$name, $type, $isRequired, $defaultValue];
-        }
-
-        return $this;
-    }
-
+    /**
+     * Get Query instance suitable for execution by Client.
+     */
     public function getQuery(): Query
     {
         $queryBuilder = new \GraphQL\QueryBuilder\QueryBuilder($this->objectName);
@@ -369,5 +409,33 @@ class QueryBuilder
         }
 
         return $data;
+    }
+
+    /**
+     * Declare variable on the root query builder as that is where variable declarations belong in GraphQL.
+     */
+    private function declareVariable(string $name, string $type, bool $isRequired = false, $defaultValue = null): self
+    {
+        if ($this->parentQueryBuilder) {
+            $this->getRootQueryBuilder()->declareVariable($name, $type, $isRequired, $defaultValue);
+        } else {
+            $this->declaredVariables[] = [$name, $type, $isRequired, $defaultValue];
+        }
+
+        return $this;
+    }
+
+    private function getRootQueryBuilder()
+    {
+        if ($this->isRoot()) {
+            return $this;
+        }
+
+        return $this->parentQueryBuilder->getRootQueryBuilder();
+    }
+
+    private function isRoot()
+    {
+        return $this->parentQueryBuilder === null;
     }
 }
