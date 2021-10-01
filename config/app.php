@@ -101,8 +101,8 @@ return [
     |
     */
     'available_locales' => [
-        'en' => 'English',
-        'fr' => 'French',
+        'en',
+        'fr',
     ],
 
     /*

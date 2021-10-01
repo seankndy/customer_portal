@@ -30,11 +30,11 @@ function bytes_to_gigabytes($value)
  * @param string $language
  * @return array
  */
-function getAvailableLanguages($language = "en")
+function getAvailableLanguages($translateToLocale = "en")
 {
     $languages = [];
-    foreach (config('app.available_locales') as $locale => $lang) {
-        $languages[$locale] = trans("languages." . $locale, [], $language);
+    foreach (config('app.available_locales') as $locale) {
+        $languages[$locale] = trans("languages." . $locale, [], $translateToLocale);
     }
     return $languages;
 }
