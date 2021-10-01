@@ -83,13 +83,13 @@ abstract class BaseResource
                     if (isset($meta['sortBy'])) {
                         $dir = \strtoupper($meta['sortDir'] ?? 'ASC');
                         $query->setArguments([
-                            'sorter' => new RawObject('[{attribute:"'.$meta['sortBy'].'",direction:'.$dir.'}]')
+                            'sorter' => new RawObject('[{attribute:"' . $meta['sortBy'] . '",direction:' . $dir . '}]')
                         ]);
                     }
 
                     $vars[] = $query;
                 } else {
-                    $classBaseName = \substr($type, \strrpos($type, '\\')+1);
+                    $classBaseName = \substr($type, \strrpos($type, '\\') + 1);
                     $vars[] = (new Query(Str::snake(\lcfirst($classBaseName))))
                         ->setSelectionSet($type::graphQLQuery(false));
                 }
@@ -99,5 +99,16 @@ abstract class BaseResource
         }
 
         return $wrapInEntities ? [(new Query('entities'))->setSelectionSet($vars)] : $vars;
+    }
+
+    public static function fieldsAndTypes(): array
+    {
+        $fields = [];
+        foreach (Reflection::getPublicProperties(static::class) as $property) {
+            $type = Reflection::getPropertyType($property);
+;
+            $fields[Str::snake($property->getName())] = $type;
+        }
+        return $fields;
     }
 }

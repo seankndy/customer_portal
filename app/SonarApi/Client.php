@@ -7,9 +7,11 @@ use App\SonarApi\Mutations\Mutation;
 use App\SonarApi\Queries\AccountsQuery;
 use App\SonarApi\Queries\ContactsQuery;
 use App\SonarApi\Queries\Query;
+use App\SonarApi\Queries\QueryBuilder;
 use App\SonarApi\Queries\TicketsQuery;
 use App\SonarApi\Exceptions\SonarHttpException;
 use App\SonarApi\Exceptions\SonarQueryException;
+use App\SonarApi\Resources\Account;
 use GuzzleHttp\ClientInterface as GuzzleClientInterface;
 
 class Client
@@ -30,9 +32,13 @@ class Client
         $this->url = $url;
     }
 
-    public function accounts(): AccountsQuery
+    public function accounts(): QueryBuilder
     {
-        return new AccountsQuery($this);
+        return new QueryBuilder(
+            $this,
+            Account::class,
+            'accounts'
+        );
     }
 
     public function tickets(): TicketsQuery
