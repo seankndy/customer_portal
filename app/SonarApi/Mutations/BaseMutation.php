@@ -4,6 +4,7 @@ namespace App\SonarApi\Mutations;
 
 use App\SonarApi\Mutations\Inputs\Input;
 use App\SonarApi\Queries\QueryBuilder;
+use App\SonarApi\Types\Type;
 use GraphQL\Variable;
 
 abstract class BaseMutation implements MutationInterface
@@ -24,7 +25,7 @@ abstract class BaseMutation implements MutationInterface
             } else {
                 $variables[] = new Variable(
                     $var,
-                    is_int($value) ? 'Int64Bit' : 'String',
+                    $value instanceof Type ? $value->name() : \ucfirst(gettype($value)),
                     $required
                 );
             }
@@ -52,7 +53,7 @@ abstract class BaseMutation implements MutationInterface
             if ($value instanceof Input) {
                 $variables[$var] = $value->toArray();
             } else {
-                $variables[$var] = $value;
+                $variables[$var] = $value instanceof Type ? $value->value : $value;
             }
         }
         return $variables;
@@ -63,7 +64,7 @@ abstract class BaseMutation implements MutationInterface
      */
     public function name(): string
     {
-        return \lcfirst(\substr(static::class, \strrpos(static::class, '\\')+1));
+        return lcfirst((new \ReflectionClass(static::class))->getShortName());
     }
 
     abstract public function returnResource(): ?string;
