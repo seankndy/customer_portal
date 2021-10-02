@@ -4,9 +4,8 @@ namespace App\SonarApi\Resources;
 
 use App\SonarApi\Queries\QueryBuilder;
 use App\SonarApi\Resources\Reflection\Reflection;
+use App\SonarApi\Types\Type;
 use Carbon\Carbon;
-use GraphQL\Query;
-use GraphQL\RawObject;
 use Illuminate\Support\Str;
 
 abstract class BaseResource
@@ -59,6 +58,9 @@ abstract class BaseResource
                     $data[$field] = $jsonObject->$jsonVar ? Carbon::createFromTimeString($jsonObject->$jsonVar) : null;
                 } else if (is_a($type->type(), \DateTime::class, true)) {
                     $data[$field] = $jsonObject->$jsonVar ? new \DateTime($jsonObject->$jsonVar) : null;
+                } else if (is_a($type->type(), Type::class, true)) {
+                    $typeClass = $type->type();
+                    $data[$field] = $jsonObject->$jsonVar ? new $typeClass($jsonObject->$jsonVar) : null;
                 } else if (is_subclass_of($type->type(), BaseResource::class) && $jsonObject->$jsonVar) {
                     $data[$field] = ($type->type())::fromJsonObject($jsonObject->$jsonVar);
                 } else {

@@ -2,6 +2,8 @@
 
 namespace App\SonarApi\Resources;
 
+use Carbon\Carbon;
+
 class Address extends BaseResource
 {
     public int $id;
@@ -21,4 +23,8 @@ class Address extends BaseResource
     public ?string $longitude;
 
     public bool $serviceable;
+
+    public Carbon $createdAt;
+
+    public Carbon $updatedAt;
 }
