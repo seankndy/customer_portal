@@ -4,5 +4,13 @@ namespace App\SonarApi\Types;
 
 class Int64Bit extends Type
 {
-    public int $value;
+    /**
+     * @var int
+     */
+    public $value;
+
+    public function __construct(int $value)
+    {
+        $this->value = $value;
+    }
 }

@@ -4,10 +4,10 @@ namespace App\SonarApi\Types;
 
 abstract class Type
 {
-    public function __construct($value)
-    {
-        $this->value = $value;
-    }
+    /**
+     * @var mixed
+     */
+    public $value;
 
     public function name()
     {
