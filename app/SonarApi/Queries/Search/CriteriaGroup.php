@@ -5,7 +5,7 @@ namespace App\SonarApi\Queries\Search;
 class CriteriaGroup
 {
     /**
-     * @var Criteria[]
+     * @var CriteriaInterface[]
      */
     private array $criterias;
 
@@ -21,7 +21,7 @@ class CriteriaGroup
         return $this;
     }
 
-    public function addCriteria(Criteria $criteria): self
+    public function addCriteria(CriteriaInterface $criteria): self
     {
         $this->criterias[] = $criteria;
 
