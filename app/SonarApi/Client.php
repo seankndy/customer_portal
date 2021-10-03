@@ -21,29 +21,31 @@ class Client
 
     private string $url;
 
+    private array $rootQueryBuilders = [];
+
     public function __construct(
         GuzzleClientInterface $httpClient,
         string $apiKey,
-        string $url
+        string $url,
+        array $rootQueryBuilders = []
     ) {
         $this->httpClient = $httpClient;
         $this->apiKey = $apiKey;
         $this->url = $url;
+        $this->rootQueryBuilders = \array_merge([
+            'accounts' => Account::class,
+            'tickets' => Ticket::class,
+            'contacts' => Contact::class,
+        ], $this->rootQueryBuilders);
     }
 
-    public function accounts(): QueryBuilder
+    public function __call(string $name, array $args)
     {
-        return Account::newQueryBuilder()->setClient($this);
-    }
+        if (isset($this->rootQueryBuilders[$name])) {
+            return ($this->rootQueryBuilders[$name])::newQueryBuilder()->setClient($this);
+        }
 
-    public function tickets(): QueryBuilder
-    {
-        return Ticket::newQueryBuilder()->setClient($this);
-    }
-
-    public function contacts(): QueryBuilder
-    {
-        return Contact::newQueryBuilder()->setClient($this);
+        throw new \Error('Call to undefined method '.self::class.'::'.$name.'()');
     }
 
     public function mutations(): ClientMutator
