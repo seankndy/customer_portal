@@ -7,7 +7,7 @@ class Reflection
     /**
      * @throws \ReflectionException
      */
-    public static function getResourceFields($objectOrClass): array
+    public static function getResourceProperties($objectOrClass): array
     {
         $properties = (new \ReflectionClass($objectOrClass))
             ->getProperties(\ReflectionProperty::IS_PUBLIC);

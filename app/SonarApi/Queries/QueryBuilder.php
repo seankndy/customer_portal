@@ -4,7 +4,8 @@ namespace App\SonarApi\Queries;
 
 use App\SonarApi\Client;
 use App\SonarApi\Queries\Search\Search;
-use App\SonarApi\Resources\BaseResource;
+use App\SonarApi\Resources\Reflection\Reflection;
+use App\SonarApi\Resources\ResourceInterface;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
@@ -78,12 +79,12 @@ class QueryBuilder
         string $objectName,
         self $parentQueryBuilder = null
     ) {
-        if (!is_subclass_of($resourceClass, BaseResource::class)) {
-            throw new \InvalidArgumentException("\$resourceClass must by subclass of ".BaseResource::class);
+        if (!is_a($resourceClass, ResourceInterface::class, true)) {
+            throw new \InvalidArgumentException("\$resourceClass must implement ".ResourceInterface::class);
         }
 
         $this->resource = $resourceClass;
-        $this->resourceFieldsAndTypes = $this->resource::fieldsAndTypes();
+        $this->resourceFieldsAndTypes = Reflection::getResourceProperties($this->resource);
         $this->objectName = $objectName;
         $this->parentQueryBuilder = $parentQueryBuilder;
         $this->with((new $resourceClass())->with());
@@ -92,7 +93,7 @@ class QueryBuilder
     /**
      * Execute the query return result(s).
      *
-     * @return BaseResource|Collection<int, BaseResource>|null
+     * @return ResourceInterace|Collection<int, ResourceInterface>|null
      * @throws \App\SonarApi\Exceptions\SonarHttpException
      * @throws \App\SonarApi\Exceptions\SonarQueryException
      */
@@ -188,18 +189,16 @@ class QueryBuilder
                     $closure = 0;
                 }
 
-                $relationField = Str::snake($relation);
-
-                if (!isset($this->resourceFieldsAndTypes[$relationField])
-                    || !$this->resourceFieldsAndTypes[$relationField]->isResource()) {
+                if (!isset($this->resourceFieldsAndTypes[$relation])
+                    || !$this->resourceFieldsAndTypes[$relation]->isResource()) {
                     throw new \InvalidArgumentException("Relation specified ($relation) is not a valid resource.");
                 }
 
                 $relationQueryBuilder = (new self(
-                    $this->resourceFieldsAndTypes[$relationField]->type(),
-                    $relationField,
+                    $this->resourceFieldsAndTypes[$relation]->type(),
+                    Str::snake($relation),
                     $this
-                ))->many($this->resourceFieldsAndTypes[$relationField]->arrayOf());
+                ))->many($this->resourceFieldsAndTypes[$relation]->arrayOf());
 
                 if (is_callable($closure)) {
                     $closure($relationQueryBuilder);
@@ -245,7 +244,7 @@ class QueryBuilder
 
             foreach ($arg as $field) {
                 if (!in_array($field, $this->only)) {
-                    $this->only[] = Str::snake($field);
+                    $this->only[] = $field;
                 }
             }
         }
@@ -296,17 +295,15 @@ class QueryBuilder
             }
 
             if ($type->isResource()) {
-                $relationName = Str::camel($field);
-
-                if (!isset($this->with[$relationName])) {
+                if (!isset($this->with[$field])) {
                     continue;
                 }
 
-                $relationQuery = $this->with[$relationName]->getQuery();
+                $relationQuery = $this->with[$field]->getQuery();
                 $select = $relationQuery->query();
                 $variables = \array_merge($variables, $relationQuery->variables());
             } else {
-                $select = $field;
+                $select = Str::snake($field);
             }
 
             if ($this->many) {

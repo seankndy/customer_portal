@@ -8,7 +8,7 @@ use App\SonarApi\Types\Type;
 use Carbon\Carbon;
 use Illuminate\Support\Str;
 
-abstract class BaseResource
+abstract class BaseResource implements ResourceInterface
 {
     protected array $with = [];
 
@@ -45,7 +45,7 @@ abstract class BaseResource
     {
         $data = [];
 
-        foreach (Reflection::getResourceFields(static::class) as $field => $type) {
+        foreach (Reflection::getResourceProperties(static::class) as $field => $type) {
             $jsonVar = Str::snake($field);
 
             if (property_exists($jsonObject, $jsonVar)) {
@@ -61,7 +61,7 @@ abstract class BaseResource
                 } else if (is_a($type->type(), Type::class, true)) {
                     $typeClass = $type->type();
                     $data[$field] = $jsonObject->$jsonVar ? new $typeClass($jsonObject->$jsonVar) : null;
-                } else if (is_subclass_of($type->type(), BaseResource::class) && $jsonObject->$jsonVar) {
+                } else if (is_a($type->type(), ResourceInterface::class, true) && $jsonObject->$jsonVar) {
                     $data[$field] = ($type->type())::fromJsonObject($jsonObject->$jsonVar);
                 } else {
                     $data[$field] = $jsonObject->$jsonVar;
@@ -72,19 +72,7 @@ abstract class BaseResource
         return new static($data);
     }
 
-    /**
-     * @throws \ReflectionException
-     */
-    public static function fieldsAndTypes(): array
-    {
-        $fields = [];
-        foreach (Reflection::getResourceFields(static::class) as $field => $type) {
-            $fields[Str::snake($field)] = $type;
-        }
-        return $fields;
-    }
-
-    public static function newQueryBuilder()
+    public static function newQueryBuilder(): QueryBuilder
     {
         $className = (new \ReflectionClass(static::class))->getShortName();
 

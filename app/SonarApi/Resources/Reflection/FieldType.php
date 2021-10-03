@@ -2,7 +2,7 @@
 
 namespace App\SonarApi\Resources\Reflection;
 
-use App\SonarApi\Resources\BaseResource;
+use App\SonarApi\Resources\ResourceInterface;
 
 class FieldType
 {
@@ -28,6 +28,6 @@ class FieldType
 
     public function isResource()
     {
-        return is_subclass_of($this->type, BaseResource::class);
+        return is_a($this->type, ResourceInterface::class, true);
     }
 }
