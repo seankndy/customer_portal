@@ -3,6 +3,7 @@
 namespace App\SonarApi\Queries;
 
 use App\SonarApi\Client;
+use App\SonarApi\Queries\Search\Search;
 use App\SonarApi\Resources\BaseResource;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
@@ -23,6 +24,10 @@ class QueryBuilder
      */
     private array $with = [];
     /**
+     * Only select these fields.
+     */
+    private array $only = [];
+    /**
      * If this query will return an array of resources.
      */
     private bool $many = true;
@@ -41,7 +46,7 @@ class QueryBuilder
     /**
      * Search criteria.
      */
-    private array $where = [];
+    private ?Search $search = null;
     /**
      * Should we paginate?
      */
@@ -229,54 +234,49 @@ class QueryBuilder
     }
 
     /**
+     * Limit the fields returned by query to only these fields.
+     */
+    public function only(...$args): self
+    {
+        foreach ($args as $arg) {
+            if (!is_array($arg)) {
+                $arg = [$arg];
+            }
+
+            foreach ($arg as $field) {
+                if (!in_array($field, $this->only)) {
+                    $this->only[] = Str::snake($field);
+                }
+            }
+        }
+
+        return $this;
+    }
+
+    /**
      * Specify a search filter criteria.
      */
     public function where(string $field, ...$args): self
     {
-        if (count($args) == 1) {
-            $operator = '=';
-            $value = $args[0];
-        } else if (count($args) == 2) {
-            $operator = $args[0];
-            $value = $args[1];
-        } else {
-            throw new \InvalidArgumentException("Minimum of 2 arguments, maximum of 3");
+        if (!isset($this->search)) {
+            $this->search = new Search();
         }
 
-        if (!is_array($value)) {
-            $value = [$value];
+        $this->search->where(Str::snake($field), ...$args);
+
+        return $this;
+    }
+
+    /**
+     * Specify an OR search filter criteria.
+     */
+    public function orWhere(string $field, ...$args): self
+    {
+        if (!isset($this->search)) {
+            $this->search = new Search();
         }
 
-        switch (gettype($value[0])) {
-            case 'integer':
-                $fieldType = 'integer_fields';
-                break;
-            case 'boolean':
-                if ($operator != '=') {
-                    throw new \InvalidArgumentException("Boolean values only support an equality (=) comparison.");
-                }
-                $fieldType = 'boolean_fields';
-                break;
-            case 'NULL':
-                $fieldType = $operator == '=' ? 'unset_fields' : 'exists';
-                break;
-            default:
-                $fieldType = 'string_fields';
-                break;
-        }
-
-        if ($fieldType == 'boolean_fields' && $operator != '=') {
-            throw new \InvalidArgumentException("Boolean values only support an equality (=) comparison.");
-        }
-
-        if (!isset($this->where[$fieldType])) {
-            $this->where[$fieldType] = [];
-        }
-
-        $this->where[$fieldType][$field] = \array_merge(
-            $this->where[$fieldType][$field] ?? [],
-            [$value, $operator]
-        );
+        $this->search->orWhere(Str::snake($field), ...$args);
 
         return $this;
     }
@@ -291,6 +291,10 @@ class QueryBuilder
         $variables = [];
         $manySelectionSet = [];
         foreach ($this->resourceFieldsAndTypes as $field => $type) {
+            if ($this->only && !\in_array($field, $this->only)) {
+                continue;
+            }
+
             if ($type->isResource()) {
                 $relationName = Str::camel($field);
 
@@ -318,12 +322,12 @@ class QueryBuilder
             );
         }
 
-        if ($this->where) {
-            $this->declareVariable($this->objectName.'_search', 'Search');
+        if ($this->search) {
+            $this->declareVariable($this->objectName.'_search', '[Search]');
 
-            $queryBuilder->setArgument('search', ['$'.$this->objectName.'_search']);
+            $queryBuilder->setArgument('search', '$'.$this->objectName.'_search');
 
-            $variables[$this->objectName.'_search'] = $this->buildSearchFromWhere();
+            $variables[$this->objectName.'_search'] = $this->search->toArray();
         }
         if ($this->sortBy) {
             $this->declareVariable($this->objectName.'_sorter', 'Sorter');
@@ -362,53 +366,6 @@ class QueryBuilder
         }
 
         return new Query($queryBuilder->getQuery(), $variables);
-    }
-
-    private function buildSearchFromWhere(): array
-    {
-        $data = [
-            'integer_fields' => [],
-            'boolean_fields' => [],
-            'string_fields' => [],
-            'unset_fields' => [],
-            'exists' => [],
-        ];
-
-        foreach ($this->where as $type => $fieldValues) {
-            foreach ($fieldValues as $field => $valuesAndOperator) {
-                [$values, $operator] = $valuesAndOperator;
-                $field = Str::snake($field);
-
-                foreach ($values as $value) {
-                    if ($type == 'integer_fields') {
-                        $data[$type][] = [
-                            'attribute' => $field,
-                            'search_value' => $value,
-                            'operator' => [
-                                '=' => 'EQ',
-                                '!=' => 'NEQ',
-                            ][$operator]
-                        ];
-                    } else if ($type == 'boolean_fields') {
-                        $data[$type][] = [
-                            'attribute' => $field,
-                            'search_value' => $value,
-                        ];
-                    } else if ($type == 'string_fields') {
-                        $data[$type][] = [
-                            'attribute' => $field,
-                            'search_value' => $value,
-                            'match' => $operator == '=',
-                            'partial_matching' => false,
-                        ];
-                    } else if ($type == 'unset_fields' || $type == 'exists') {
-                        $data[$type][] = $field;
-                    }
-                }
-            }
-        }
-
-        return $data;
     }
 
     /**
