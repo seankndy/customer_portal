@@ -63,7 +63,7 @@
                                                             </div>
                                                             <div class="col-auto">
                                                                 <time class="comment-time-light">
-                                                                    {{$reply->createdAt->diffForHumans()}} <i
+                                                                    {{\Carbon\Carbon::instance($reply->createdAt)->diffForHumans()}} <i
                                                                             class="fe fe-clock ml-1"></i>
                                                                 </time>
                                                             </div>
@@ -79,7 +79,7 @@
                                                                         </div>
                                                                         <div class="col-auto">
                                                                             <time class="comment-time-dark">
-                                                                                {{$reply->createdAt->diffForHumans()}}
+                                                                                {{\Carbon\Carbon::instance($reply->createdAt)->diffForHumans()}}
                                                                                 <i class="fe fe-clock ml-1"></i>
                                                                             </time>
                                                                         </div>

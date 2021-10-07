@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Actions\SetPortalUserLanguage;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\AuthenticationRequest;
-use App\SonarApi\Client;
+use SeanKndy\SonarApi\Client;
 use App\SystemSetting;
 use App\Traits\Throttles;
 use Illuminate\Http\RedirectResponse;

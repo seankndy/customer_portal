@@ -2,7 +2,7 @@
 
 namespace App\DataTransferObjects;
 
-use App\SonarApi\Resources\Ticket;
+use SeanKndy\SonarApi\Resources\Ticket;
 use Illuminate\Http\Request;
 use Spatie\DataTransferObject\DataTransferObject;
 

@@ -4,10 +4,10 @@ namespace App\Actions;
 
 use App\DataTransferObjects\AccountTicketData;
 use App\DataTransferObjects\TicketReplyData;
-use App\SonarApi\Client;
-use App\SonarApi\Mutations\CreatePublicTicket;
-use App\SonarApi\Mutations\Inputs\CreatePublicTicketMutationInput;
-use App\SonarApi\Resources\Ticket;
+use SeanKndy\SonarApi\Client;
+use SeanKndy\SonarApi\Mutations\CreatePublicTicket;
+use SeanKndy\SonarApi\Mutations\Inputs\CreatePublicTicketMutationInput;
+use SeanKndy\SonarApi\Resources\Ticket;
 
 class CreateAccountTicketAction
 {

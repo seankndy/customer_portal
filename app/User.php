@@ -2,7 +2,7 @@
 
 namespace App;
 
-use App\SonarApi\Resources\Contact;
+use SeanKndy\SonarApi\Resources\Contact;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Lang;

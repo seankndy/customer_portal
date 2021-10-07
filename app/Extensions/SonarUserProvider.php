@@ -2,7 +2,7 @@
 
 namespace App\Extensions;
 
-use App\SonarApi\Client;
+use SeanKndy\SonarApi\Client;
 use App\User;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Auth\UserProvider;

@@ -26,7 +26,8 @@
         "sonarsoftwareinc/customer_portal_framework": "dev-master",
         "spatie/laravel-csp": "^2.6",
         "gmostafa/php-graphql-client": "^1.13",
-        "spatie/data-transfer-object": "^2.8"
+        "spatie/data-transfer-object": "^2.8",
+        "seankndy/fluent-sonar-api": "^1.1"
     },
     "repositories": [
         {

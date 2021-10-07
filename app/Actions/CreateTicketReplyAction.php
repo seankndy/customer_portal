@@ -3,10 +3,10 @@
 namespace App\Actions;
 
 use App\DataTransferObjects\TicketReplyData;
-use App\SonarApi\Client;
-use App\SonarApi\Mutations\CreateTicketReply;
-use App\SonarApi\Mutations\Inputs\CreateTicketReplyMutationInput;
-use App\SonarApi\Resources\TicketReply;
+use SeanKndy\SonarApi\Client;
+use SeanKndy\SonarApi\Mutations\CreateTicketReply;
+use SeanKndy\SonarApi\Mutations\Inputs\CreateTicketReplyMutationInput;
+use SeanKndy\SonarApi\Resources\TicketReply;
 
 class CreateTicketReplyAction
 {

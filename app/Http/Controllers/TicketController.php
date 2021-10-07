@@ -9,8 +9,8 @@ use App\DataTransferObjects\AccountTicketData;
 use App\DataTransferObjects\TicketReplyData;
 use App\Http\Requests\TicketReplyRequest;
 use App\Http\Requests\TicketRequest;
-use App\SonarApi\Client;
-use App\SonarApi\Resources\Ticket;
+use SeanKndy\SonarApi\Client;
+use SeanKndy\SonarApi\Resources\Ticket;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -224,7 +224,7 @@ class TicketController extends Controller
     }
 
     /**
-     * @param \App\SonarApi\Resources\Ticket[] $tickets
+     * @param \SeanKndy\SonarApi\Resources\Ticket[] $tickets
      * @return array
      */
     private function associateTicketsToAccounts(iterable $tickets): array

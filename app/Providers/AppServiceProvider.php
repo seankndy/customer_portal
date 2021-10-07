@@ -76,8 +76,8 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->app->bind(\GuzzleHttp\ClientInterface::class, GuzzleClient::class);
 
-        $this->app->singleton(\App\SonarApi\Client::class, function ($app) {
-            return new \App\SonarApi\Client(
+        $this->app->singleton(\SeanKndy\SonarApi\Client::class, function ($app) {
+            return new \SeanKndy\SonarApi\Client(
                 app(\GuzzleHttp\ClientInterface::class),
                 config('sonar.api_key'),
                 config('sonar.url'),

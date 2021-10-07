@@ -92,7 +92,7 @@
                      </TD>
                      @endif
                      <TD class="d-none d-md-table-cell">
-                        {{ $ticket->updatedAt->diffForHumans() }}
+                        {{ \Carbon\Carbon::instance($ticket->updatedAt)->diffForHumans() }}
                      </TD>
                      <TD class="d-none d-sm-table-cell" width="20">
                         <span class="badge badge-pill badge-soft-dark">{{count($ticket->ticketReplies)}}</span>
