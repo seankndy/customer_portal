@@ -25,13 +25,11 @@ class UpdateTicketStatusAction
     {
         $ticketId = new Int64Bit($ticket instanceof Ticket ? $ticket->id : $ticket);
 
-        return $this->sonarClient->mutations()->run(
-            new UpdateTicket(
-                $ticketId,
-                new UpdateTicketMutationInput([
-                    'status' => $newStatus,
-                ])
-            )
-        );
+        return $this->sonarClient->mutations()->updateTicket([
+            'id!' => $ticketId,
+            'input' => new UpdateTicketMutationInput([
+                'status' => $newStatus,
+            ]),
+        ])->return(Ticket::class)->run();
     }
 }
