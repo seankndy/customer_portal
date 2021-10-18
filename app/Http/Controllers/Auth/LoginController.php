@@ -40,7 +40,7 @@ class LoginController extends Controller
         }
 
         if (Auth::attempt($request->only('username', 'password'))) {
-            $request->session()->put('account', $this->sonarClient->accounts()->with('addresses')->where('id', Auth::user()->accountId)->get()->first());
+            $request->session()->put('account', $this->sonarClient->accounts()->with('addresses')->where('id', Auth::user()->accountId)->first());
             $request->session()->put('child_accounts', $this->sonarClient->accounts()->with('addresses')->where('parent_account_id', Auth::user()->accountId)->get());
 
             $this->resetThrottleValue("login", $this->generateLoginThrottleHash($request));

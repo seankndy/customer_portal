@@ -4,7 +4,7 @@ namespace App\Actions;
 
 use App\DataTransferObjects\TicketReplyData;
 use SeanKndy\SonarApi\Client;
-use SeanKndy\SonarApi\Mutations\Inputs\CreateTicketReplyMutationInput;
+use SeanKndy\SonarApi\Mutations\Inputs\InputBuilder;
 use SeanKndy\SonarApi\Resources\TicketReply;
 
 class CreateTicketReplyAction
@@ -19,7 +19,7 @@ class CreateTicketReplyAction
     public function __invoke(TicketReplyData $ticketReplyData): TicketReply
     {
         return $this->sonarClient->mutations()->createTicketReply([
-            'input' => new CreateTicketReplyMutationInput([
+            'input' => fn(InputBuilder $input): InputBuilder => $input->type('CreateTicketReplyMutationInput')->data([
                 'ticketId' => $ticketReplyData->ticket->id,
                 'body' => $ticketReplyData->body,
                 'incoming' => true,

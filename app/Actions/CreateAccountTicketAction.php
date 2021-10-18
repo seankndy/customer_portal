@@ -3,10 +3,8 @@
 namespace App\Actions;
 
 use App\DataTransferObjects\AccountTicketData;
-use App\DataTransferObjects\TicketReplyData;
 use SeanKndy\SonarApi\Client;
-use SeanKndy\SonarApi\Mutations\CreatePublicTicket;
-use SeanKndy\SonarApi\Mutations\Inputs\CreatePublicTicketMutationInput;
+use SeanKndy\SonarApi\Mutations\Inputs\InputBuilder;
 use SeanKndy\SonarApi\Resources\Ticket;
 
 class CreateAccountTicketAction
@@ -21,7 +19,7 @@ class CreateAccountTicketAction
     public function __invoke(AccountTicketData $ticketData): Ticket
     {
         return $this->sonarClient->mutations()->createPublicTicket([
-            'input' => new CreatePublicTicketMutationInput([
+            'input' => fn(InputBuilder $input): InputBuilder => $input->type('CreatePublicTicketMutationInput')->data([
                 'subject' => $ticketData->subject,
                 'status' => 'OPEN',
                 'priority' => [
