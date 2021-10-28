@@ -35,16 +35,16 @@
                 <div class="row">
                     <div class="col-lg-12 col-12">
                         <div class="form-group">
-                            <label for="account_number">{{utrans("billing.accountNumber")}}</label>
-                            {!! Form::tel("account_number",null,['id' => 'account_number', 'autocomplete' => 'account_number', 'class' => 'form-control', 'placeholder' => utrans("billing.accountNumber")]) !!}
+                            <label for="routing_number">{{utrans("billing.routingNumber")}}</label>
+                            {!! Form::tel("routing_number",null,['id' => 'routing_number', 'autocomplete' => 'routing_number', 'class' => 'form-control', 'placeholder' => utrans("billing.routingNumber")]) !!}
                         </div>
                     </div>
                 </div>
                 <div class="row">
                     <div class="col-lg-12 col-12">
                         <div class="form-group">
-                            <label for="routing_number">{{utrans("billing.routingNumber")}}</label>
-                            {!! Form::tel("routing_number",null,['id' => 'routing_number', 'autocomplete' => 'routing_number', 'class' => 'form-control', 'placeholder' => utrans("billing.routingNumber")]) !!}
+                            <label for="account_number">{{utrans("billing.accountNumber")}}</label>
+                            {!! Form::tel("account_number",null,['id' => 'account_number', 'autocomplete' => 'account_number', 'class' => 'form-control', 'placeholder' => utrans("billing.accountNumber")]) !!}
                         </div>
                     </div>
                 </div>
@@ -110,8 +110,8 @@
                 </div>
             </div>
         </div>
-        <div class="row">
-            <div class="col-12 col-md-12">
+        <div class="row w-100 text-center text-md-left">
+            <div class="col-lg-12 col-12">
                 <input type="hidden" name="payment_tracker_id" value="{{uniqid("", true)}}" />
                 <button type="submit" class="btn btn-primary">{{utrans("billing.addNewBankAccount")}}</button>
                 {!! Form::close() !!}
