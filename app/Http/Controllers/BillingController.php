@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Billing\GoCardless;
 use App\Billing\PortalStripe;
+use App\DataTransferObjects\PaymentSubmission;
+use App\Events\PaymentSuccessfullySubmittedEvent;
 use App\Http\Requests\CreateBankAccountRequest;
 use App\Http\Requests\CreateCreditCardRequest;
 use App\Http\Requests\CreateTokenizedCreditCardRequest;
@@ -161,7 +163,7 @@ class BillingController extends Controller
     /**
      * Process a submitted payment
      * @param CreditCardPaymentRequest $request
-     * @return $this
+     * @return \Illuminate\Http\RedirectResponse
      */
     public function submitPayment(CreditCardPaymentRequest $request)
     {
@@ -198,6 +200,11 @@ class BillingController extends Controller
         $this->clearBillingCache();
         if ($result->success == true)
         {
+            event(new PaymentSuccessfullySubmittedEvent(new PaymentSubmission([
+                'account' => session('account'),
+                'amount' => $request->amount * 100,
+            ])));
+
             return redirect()->action("BillingController@index")->with('success', utrans("billing.paymentWasSuccessful"));
         }
         else

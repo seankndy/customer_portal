@@ -19,16 +19,18 @@ class UpdateAccountStatusAction
 
     /**
      * @param Account|int $account
+     * @param AccountStatus|int $accountStatus
      * @throws \Exception
      */
-    public function __invoke($account, AccountStatus $accountStatus): Account
+    public function __invoke($account, $accountStatus): Account
     {
         $accountId = new Int64Bit($account instanceof Account ? $account->id : $account);
+        $accountStatusId = new Int64Bit($accountStatus instanceof AccountStatus ? $accountStatus->id : $accountStatus);
 
         return $this->sonarClient->mutations()->updateAccount([
             'id!' => $accountId,
             'input' => fn(InputBuilder $input): InputBuilder => $input->type('UpdateAccountMutationInput')->data([
-                'accountStatusId' => new Int64Bit($accountStatus->id),
+                'accountStatusId' => $accountStatusId,
             ]),
         ])->return(Account::class)->run();
     }

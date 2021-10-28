@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\DataTransferObjects\PaymentSubmission;
+use App\Events\PaymentSuccessfullySubmittedEvent;
 use App\PaypalTemporaryToken;
 use Exception;
 use Illuminate\Http\Request;
@@ -133,6 +135,11 @@ class PayPalController extends Controller
             $accountBillingController = new AccountBillingController();
             $transaction = $payment->getTransactions()[0];
             $accountBillingController->storePayPalPayment(get_user()->accountId, $transaction->related_resources[0]->sale->amount->total, $transaction->related_resources[0]->sale->id);
+
+            event(new PaymentSuccessfullySubmittedEvent(new PaymentSubmission([
+                'account' => session('account'),
+                'amount' => $transaction->related_resources[0]->sale->amount->total * 100,
+            ])));
         } catch (Exception $e) {
             $error = utrans("errors.failedToApplyPaypalPayment");
             return view("pages.paypal.error", compact('error'));
