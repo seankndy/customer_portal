@@ -71,20 +71,7 @@
                   </div>
                </div>
             </div>
-            {{--<div class="row mt-1">--}}
-               {{--<div class="col-12 mb--3 ">--}}
-                  {{--<div class="form-group">--}}
-                     {{--<label>--}}
-                     {{--Primary Color--}}
-                     {{--</label>--}}
-                  {{--</div>--}}
-               {{--</div>--}}
-            {{--</div>--}}
-            {{--<div class="row">--}}
-            {{--<div class="col-3">--}}
-            {{--<input id="primaryColor" type="text" class="form-control" value="pink" />--}}
-            {{--</div>--}}
-            {{--</div>--}}
+         </div>
       </div>
 
 
