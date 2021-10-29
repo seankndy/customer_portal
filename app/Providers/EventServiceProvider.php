@@ -20,7 +20,10 @@ class EventServiceProvider extends ServiceProvider
         ],
         Login::class => [
             CacheAuthenticatedUser::class,
-        ]
+        ],
+        \App\Events\PaymentSuccessfullySubmittedEvent::class => [
+            \App\Listeners\ReactivatesAccountOnPaymentListener::class,
+        ],
     ];
 
     /**
