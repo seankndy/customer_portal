@@ -18,7 +18,13 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        $schedule->command("sonar:deleteexpiredtokens")->hourly()->withoutOverlapping();
+        $schedule->command('sonar:deleteexpiredtokens')
+            ->hourly()
+            ->withoutOverlapping();
+
+        $schedule->command('queue:work --tries=3 --stop-when-empty')
+            ->everyMinute()
+            ->withoutOverlapping();
     }
     /**
      * Register the Closure based commands for the application.

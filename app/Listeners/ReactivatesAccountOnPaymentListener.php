@@ -6,10 +6,13 @@ use App\Actions\UpdateAccountStatusAction;
 use App\Events\PaymentSuccessfullySubmittedEvent;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Support\Facades\Log;
 use SeanKndy\SonarApi\Client;
 
-class ReactivatesAccountOnPaymentListener
+class ReactivatesAccountOnPaymentListener implements ShouldQueue
 {
+    use InteractsWithQueue;
+
     /**
      * Account status to set when an account is 'reactivated' after payment.
      * @var int|string  If name given rather than ID, then account status ID will be queried.
@@ -49,6 +52,8 @@ class ReactivatesAccountOnPaymentListener
      */
     public function handle(PaymentSuccessfullySubmittedEvent $event)
     {
+        $this->log($event, 'info', 'starting handling of payment submission');
+
         try {
             $delinquentInvoices = $this->sonarClient
                 ->invoices()
@@ -57,6 +62,8 @@ class ReactivatesAccountOnPaymentListener
                 ->get();
 
             if ($delinquentInvoices->count() > 0) {
+                $this->log($event, 'info', 'account has delinquent invoices, ending');
+
                 // still delinquent, do not continue to reactivate
                 return;
             }
@@ -74,10 +81,20 @@ class ReactivatesAccountOnPaymentListener
                         ->where('name', self::REACTIVATION_STATUS)
                         ->first();
 
+                $this->log($event, 'info', 'account needs to be reactivated, settings status');
+
                 ($this->updateAccountStatusAction)($event->paymentSubmission->account, $newAccountStatus);
+            } else {
+                $this->log($event, 'info', 'account does not need reactivated');
             }
         } catch (\Exception $e) {
-            //
+            $this->log($event, 'error', 'exception during handling: ' . $e->getMessage());
         }
+    }
+
+    private function log(PaymentSuccessfullySubmittedEvent $event, string $level, string $msg): void
+    {
+        Log::log($level, '[' . self::class . '] ' . $msg . '; account=' .
+            $event->paymentSubmission->account->name . '; amount='. $event->paymentSubmission->amount);
     }
 }

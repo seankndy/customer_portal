@@ -64,6 +64,7 @@ cat <<- EOF > ".env"
         SONAR_API_KEY="$API_TOKEN"
         SONAR_URL=$SONAR_URL
         EMAIL_ADDRESS=$EMAIL_ADDRESS
+        QUEUE_DRIVER=redis
 EOF
 
 export APP_KEY
