@@ -202,7 +202,7 @@ class BillingController extends Controller
         {
             event(new PaymentSuccessfullySubmittedEvent(new PaymentSubmission([
                 'account' => session('account'),
-                'amount' => $request->amount * 100,
+                'amount' => \intval($request->amount * 100),
             ])));
 
             return redirect()->action("BillingController@index")->with('success', utrans("billing.paymentWasSuccessful"));

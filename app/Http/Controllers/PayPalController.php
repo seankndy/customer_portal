@@ -138,7 +138,7 @@ class PayPalController extends Controller
 
             event(new PaymentSuccessfullySubmittedEvent(new PaymentSubmission([
                 'account' => session('account'),
-                'amount' => $transaction->related_resources[0]->sale->amount->total * 100,
+                'amount' => \intval($transaction->related_resources[0]->sale->amount->total * 100),
             ])));
         } catch (Exception $e) {
             $error = utrans("errors.failedToApplyPaypalPayment");
