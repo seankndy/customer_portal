@@ -50,7 +50,8 @@ class ReactivatesAccountOnPaymentListener
     public function handle(PaymentSuccessfullySubmittedEvent $event)
     {
         try {
-            $delinquentInvoices = $this->sonarClient->invoices()
+            $delinquentInvoices = $this->sonarClient
+                ->invoices()
                 ->where('accountId', $event->paymentSubmission->account->id)
                 ->where('delinquent', true)
                 ->get();

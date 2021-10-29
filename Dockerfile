@@ -7,14 +7,14 @@ RUN add-apt-repository ppa:ondrej/php \
  && install_clean \
       gettext \
       nginx \
-      php7.3-fpm \
-      php7.3-bcmath \
-      php7.3-curl \
-      php7.3-gmp \
-      php7.3-mbstring \
-      php7.3-sqlite3 \
-      php7.3-zip \
-      php7.3-dom \
+      php7.4-fpm \
+      php7.4-bcmath \
+      php7.4-curl \
+      php7.4-gmp \
+      php7.4-mbstring \
+      php7.4-sqlite3 \
+      php7.4-zip \
+      php7.4-dom \
       unzip
 
 WORKDIR /var/www/html
@@ -32,7 +32,7 @@ RUN COMPOSER_CACHE_DIR=/dev/null setuser www-data /tmp/composer install --no-dev
 
 COPY deploy/conf/nginx/sonar-customerportal.template /etc/nginx/conf.d/customerportal.template
 
-COPY deploy/conf/php-fpm/ /etc/php/7.3/fpm/
+COPY deploy/conf/php-fpm/ /etc/php/7.4/fpm/
 
 COPY deploy/conf/cron.d/* /etc/cron.d/
 RUN chmod -R go-w /etc/cron.d
