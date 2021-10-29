@@ -8,7 +8,7 @@
          </a>
          <h1 class="fake-half">{{trans("headers.createYourAccount",[],$language)}}</h1>
          <p>{{trans("register.creationDescription",[],$language)}}</p>
-         {!! Form::open(['action' => ['AuthenticationController@createAccount', 'token' => $creationToken->token], 'id' => 'createForm', 'method' => 'post']) !!}
+         {!! Form::open(['route' => ['register.create', 'token' => $creationToken->token], 'id' => 'createForm', 'method' => 'post']) !!}
          <div class="label label-text">
             <label for="email">{{trans("register.email",[],$language)}}</label>
             {!! Form::email("email",null,['id' => 'email', 'placeholder' => trans("register.email",[],$language)]) !!}
@@ -29,7 +29,7 @@
             <div><button type="submit" value="{{trans("actions.createAccount",[],$language)}}">{{trans("actions.createAccount",[],$language)}}</button></div>
          </div>
          {!! Form::close() !!} 
-         <small><a href="{{action("AuthenticationController@index")}}">{{trans("register.back",[],$language)}}</a></small>
+         <small><a href="{{route('login')}}">{{trans("register.back",[],$language)}}</a></small>
       </section>
    </div>
 </body>

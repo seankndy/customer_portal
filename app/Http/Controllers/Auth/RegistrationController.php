@@ -41,7 +41,9 @@ class RegistrationController extends Controller
             $result = $this->accountAuthenticationController->lookupEmail($request->input('email'));
         } catch (\Exception $e) {
             $this->incrementThrottleValue("email_lookup", md5($request->getClientIp()));
-            Log::info($e->getMessage());
+
+            Log::info("Failed to make registration token for " . $request->email . ": " . $e->getMessage());
+
             return redirect()->back()->withErrors(utrans("errors.emailLookupFailed",[],$request));
         }
 
