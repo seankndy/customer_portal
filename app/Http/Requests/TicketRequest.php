@@ -26,12 +26,12 @@ class TicketRequest extends FormRequest
     public function rules()
     {
         $rules = [];
-        if (count(session()->get('child_accounts')) > 0) {
+        if (count(session()->get('account')->childAccounts) > 0) {
             $rules['account_id'] = [
                 'required',
                 Rule::in([
                     session()->get('account')->id,
-                    ...session()->get('child_accounts')->map(fn($a) => $a->id)->toArray()
+                    ...\array_map(fn($a) => $a->id, session()->get('account')->childAccounts)
                 ])
             ];
         }

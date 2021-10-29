@@ -41,7 +41,7 @@ class TicketController extends Controller
             ->with(['ticketReplies' => fn($query) => $query->sortBy('createdAt', 'DESC')])
             ->where('ticketableId', [
                 session()->get('account')->id,
-                ...session()->get('child_accounts')->map(fn($account) => $account->id)->toArray()
+                ...\array_map(fn($a) => $a->id, session()->get('account')->childAccounts),
             ])
             ->where('ticketableType', 'Account')
             ->where('status', $status === 'OPEN' ? '!=' : '=', $status === 'OPEN' ? 'CLOSED' : $status)
@@ -97,7 +97,7 @@ class TicketController extends Controller
         return view('pages.tickets.create', [
             'accounts' => [
                 session()->get('account'),
-                ...session()->get('child_accounts')->toArray()
+                ...session()->get('account')->childAccounts
             ]
         ]);
     }
@@ -217,7 +217,7 @@ class TicketController extends Controller
             ->where('id', $id)
             ->where('ticketableId', [
                 session()->get('account')->id,
-                ...session()->get('child_accounts')->map(fn($account) => $account->id)->toArray()
+                ...\array_map(fn($a) => $a->id, session()->get('account')->childAccounts)
             ])
             ->where('ticketableType', 'Account')
             ->first();
@@ -231,7 +231,7 @@ class TicketController extends Controller
     {
         $accounts = collect([
             session()->get('account'),
-            ...session()->get('child_accounts')->toArray()
+            ...session()->get('account')->childAccounts
         ])->keyBy(fn($account) => $account->id);
 
         // associate ticket to account

@@ -5,13 +5,13 @@ namespace App\Http\Controllers\Auth;
 use App\Actions\SetPortalUserLanguage;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\AuthenticationRequest;
-use SeanKndy\SonarApi\Client;
 use App\SystemSetting;
 use App\Traits\Throttles;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
+use SeanKndy\SonarApi\Client;
 
 class LoginController extends Controller
 {
@@ -40,8 +40,18 @@ class LoginController extends Controller
         }
 
         if (Auth::attempt($request->only('username', 'password'))) {
-            $request->session()->put('account', $this->sonarClient->accounts()->with('addresses')->where('id', Auth::user()->accountId)->first());
-            $request->session()->put('child_accounts', $this->sonarClient->accounts()->with('addresses')->where('parent_account_id', Auth::user()->accountId)->get());
+            $request->session()->put(
+                'account',
+                $this->sonarClient
+                    ->accounts()
+                    ->with([
+                        'addresses',
+                        'accountStatus',
+                        'childAccounts' => fn($query) => $query->with('addresses'),
+                    ])
+                    ->where('id', Auth::user()->accountId)
+                    ->first()
+            );
 
             $this->resetThrottleValue("login", $this->generateLoginThrottleHash($request));
 
