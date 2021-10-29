@@ -31,6 +31,7 @@ class UpdateAccountStatusAction
             'id!' => $accountId,
             'input' => fn(InputBuilder $input): InputBuilder => $input->type('UpdateAccountMutationInput')->data([
                 'accountStatusId' => $accountStatusId,
+                'prorate' => false,
             ]),
         ])->return(Account::class)->run();
     }
