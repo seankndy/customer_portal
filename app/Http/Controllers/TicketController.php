@@ -44,6 +44,7 @@ class TicketController extends Controller
                 ...\array_map(fn($a) => $a->id, session()->get('account')->childAccounts),
             ])
             ->where('ticketableType', 'Account')
+            ->where('inboundMailboxId', '!=', null)
             ->where('status', $status === 'OPEN' ? '!=' : '=', $status === 'OPEN' ? 'CLOSED' : $status)
             ->sortBy('updatedAt', 'DESC')
             ->paginate(5, $request->input('page', 1), '/'.$request->path());
@@ -220,6 +221,7 @@ class TicketController extends Controller
                 ...\array_map(fn($a) => $a->id, session()->get('account')->childAccounts)
             ])
             ->where('ticketableType', 'Account')
+            ->where('inboundMailboxId', '!=', null)
             ->first();
     }
 
