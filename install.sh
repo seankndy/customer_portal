@@ -65,14 +65,18 @@ cat <<- EOF > ".env"
         SONAR_URL=$SONAR_URL
         EMAIL_ADDRESS=$EMAIL_ADDRESS
         QUEUE_DRIVER=redis
+        SESSION_DRIVER=redis
 EOF
 
 export APP_KEY
 export NGINX_HOST
 export API_USERNAME
 export API_PASSWORD
+export SONAR_API_KEY
 export SONAR_URL
 export EMAIL_ADDRESS
+export QUEUE_DRIVER
+export SESSION_DRIVER
 
 docker pull seankndy/sonarcustomerportal:stable
 
