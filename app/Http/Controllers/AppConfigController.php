@@ -101,6 +101,7 @@ class AppConfigController extends Controller
                 'mail_encryption',
                 'mail_from_address',
                 'mail_from_name',
+                'mail_alerts_recipient',
                 'isp_name',
                 'decimal_separator',
                 'thousands_separator',

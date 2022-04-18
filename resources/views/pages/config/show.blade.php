@@ -172,6 +172,16 @@
                   </div>
                </div>
             </div>
+            <div class="row mt-1">
+               <div class="col-12 ">
+                  <div class="form-group">
+                     <label>
+                        Alerts Recipient
+                     </label>
+                     {!! Form::text("mail_alerts_recipient",$systemSetting->mail_alerts_recipient,['id' => 'mail_alerts_recipient', 'class' => 'form-control', 'placeholder' => "billingadmin@yourisp.com", 'data-toggle' => 'tooltip', 'data-trigger' => 'hover','data-placement' => 'left','data-offset' => '3','data-original-title' => 'The recipient of internal/admin portal alerts']) !!}
+                  </div>
+               </div>
+            </div>
          </div>
       </div>
       <div class="card">

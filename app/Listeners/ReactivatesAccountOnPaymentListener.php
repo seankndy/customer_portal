@@ -4,9 +4,11 @@ namespace App\Listeners;
 
 use App\Actions\UpdateAccountStatusAction;
 use App\Events\PaymentSuccessfullySubmittedEvent;
+use App\Mail\CustomerPayedBill;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use SeanKndy\SonarApi\Client;
 
 class ReactivatesAccountOnPaymentListener implements ShouldQueue
@@ -25,6 +27,14 @@ class ReactivatesAccountOnPaymentListener implements ShouldQueue
     const REACTIVATES_ACCOUNT_STATUSES = [
         'Inactive / Collections',
         'On Hold',
+    ];
+
+    /**
+     * If the account is one of these statuses and the account pays up, send notice to the alerts recipient
+     * (config('mail.alerts_recipient'))
+     */
+    const SEND_NOTIFICATION_STATUSES = [
+        'Inactive / Collections',
     ];
 
     private Client $sonarClient;
@@ -81,9 +91,14 @@ class ReactivatesAccountOnPaymentListener implements ShouldQueue
                         ->where('name', self::REACTIVATION_STATUS)
                         ->first();
 
-                $this->log($event, 'info', 'account needs to be reactivated, settings status');
+                $this->log($event, 'info', 'account needs to be reactivated, setting status');
 
                 ($this->updateAccountStatusAction)($event->paymentSubmission->account, $newAccountStatus);
+
+                if (config('mail.alerts_recipient') && \in_array($currentAccountStatus->name, self::SEND_NOTIFICATION_STATUSES)) {
+                    $this->log($event, 'info', 'sending customer payed bill notice to ' . config('mail.alerts_recipient'));
+                    Mail::to(config('mail.alerts_recipient'))->send(new CustomerPayedBill($event->paymentSubmission));
+                }
             } else {
                 $this->log($event, 'info', 'account does not need reactivated');
             }

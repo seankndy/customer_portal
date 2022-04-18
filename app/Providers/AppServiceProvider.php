@@ -61,6 +61,7 @@ class AppServiceProvider extends ServiceProvider
                     'address' => $systemSetting->mail_from_address,
                     'name' => $systemSetting->mail_from_name,
                 ],
+                'mail.alerts_recipient' => $systemSetting->mail_alerts_recipient,
             ]);
         } catch (\Exception $e) {
             //
