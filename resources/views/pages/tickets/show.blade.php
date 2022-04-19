@@ -8,7 +8,8 @@
                         <h6 class="header-pretitle">
                             <a href="{{route('tickets.index')}}">{{utrans("headers.tickets")}}</a>
                         </h6>
-                        <h1 class="header-title">
+                        <h1 class="header-title d-flex align-items-center">
+                            <span class="badge badge-pill badge-soft-dark mr-1">#{{ $ticket->id }}</span>
                             {{ $ticket->subject }}
                         </h1>
                         <h5 class="header-subtitle">
