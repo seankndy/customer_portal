@@ -34,6 +34,7 @@ class ReactivatesAccountOnPaymentListener implements ShouldQueue
      * (config('mail.alerts_recipient'))
      */
     const SEND_NOTIFICATION_STATUSES = [
+        'Inactive',
         'Inactive / Collections',
     ];
 
@@ -83,7 +84,9 @@ class ReactivatesAccountOnPaymentListener implements ShouldQueue
                 ->whereHas('accounts', fn($search) => $search->where('id', $event->paymentSubmission->account->id))
                 ->first();
 
-            if ($currentAccountStatus && \in_array($currentAccountStatus->name, self::REACTIVATES_ACCOUNT_STATUSES)) {
+            if (!$currentAccountStatus) {
+                $this->log($event, 'info', 'failed to get the current account status from sonar');
+            } else if (\in_array($currentAccountStatus->name, self::REACTIVATES_ACCOUNT_STATUSES)) {
                 $newAccountStatus = is_int(self::REACTIVATION_STATUS)
                     ? self::REACTIVATION_STATUS
                     : $this->sonarClient
@@ -100,7 +103,7 @@ class ReactivatesAccountOnPaymentListener implements ShouldQueue
                     Mail::to(config('mail.alerts_recipient'))->send(new CustomerPayedBill($event->paymentSubmission));
                 }
             } else {
-                $this->log($event, 'info', 'account does not need reactivated');
+                $this->log($event, 'info', 'account does not need reactivated; current_status=' . $currentAccountStatus->name);
             }
         } catch (\Exception $e) {
             $this->log($event, 'error', 'exception during handling: ' . $e->getMessage());
