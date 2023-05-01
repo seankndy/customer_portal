@@ -10,6 +10,7 @@ use App\Traits\Throttles;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
 use SeanKndy\SonarApi\Client;
 
@@ -40,6 +41,8 @@ class LoginController extends Controller
         }
 
         if (Auth::attempt($request->only('username', 'password'))) {
+            Log::info("user " . $request->input('username') . " logged in from " . $request->ip());
+
             $request->session()->put(
                 'account',
                 $this->sonarClient
@@ -58,6 +61,8 @@ class LoginController extends Controller
             $setPortalUserLanguage(Auth::user(), $request->input('language'));
 
             return redirect()->action("BillingController@index");
+        } else {
+            Log::info("auth attempt for user " . $request->input('username') . " failed from " . $request->ip());
         }
 
         $this->incrementThrottleValue("login", $this->generateLoginThrottleHash($request));
